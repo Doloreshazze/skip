@@ -2,6 +2,8 @@ package com.playeverywhere999.skip
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.Context
+import android.content.SharedPreferences
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.graphics.PixelFormat
@@ -18,6 +20,17 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var overlayView: View? = null
     private var overlayLabel: TextView? = null
     private var toneGenerator: ToneGenerator? = null
+    private lateinit var prefs: SharedPreferences
+    private val prefsChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == null) return@OnSharedPreferenceChangeListener
+        updateOverlayText()
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        prefs = getSharedPreferences("auto_click_prefs", Context.MODE_PRIVATE)
+        prefs.registerOnSharedPreferenceChangeListener(prefsChangeListener)
+    }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -60,6 +73,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        if (::prefs.isInitialized) {
+            prefs.unregisterOnSharedPreferenceChangeListener(prefsChangeListener)
+        }
         detachOverlay()
         toneGenerator?.release()
         toneGenerator = null
