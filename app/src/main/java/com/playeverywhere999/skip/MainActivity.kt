@@ -320,7 +320,7 @@ private fun openAccessibilitySettings(context: android.content.Context) {
         AutoClickAccessibilityService::class.java
     )
 
-    val detailIntent = Intent(Settings.ACTION_ACCESSIBILITY_DETAILS_SETTINGS).apply {
+    val detailIntent = Intent(ACTION_ACCESSIBILITY_DETAILS_SETTINGS).apply {
         data = Uri.parse("package:${context.packageName}")
         putExtra(Intent.EXTRA_COMPONENT_NAME, serviceComponent.flattenToString())
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -341,6 +341,9 @@ private fun openAccessibilitySettings(context: android.content.Context) {
 
     context.startActivity(intentToLaunch)
 }
+
+private const val ACTION_ACCESSIBILITY_DETAILS_SETTINGS =
+    "android.settings.ACCESSIBILITY_DETAILS_SETTINGS"
 
 @Composable
 private fun SettingToggleRow(
