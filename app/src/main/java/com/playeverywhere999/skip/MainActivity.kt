@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.ViewCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -57,10 +58,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.playeverywhere999.skip.ui.theme.SkipTheme
 
 class MainActivity : ComponentActivity() {
+    private val insetsController by lazy { WindowInsetsControllerCompat(window, window.decorView) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        hideSystemNavigationBar()
+        installInsetsAutoHide()
+        hideSystemBars()
         setContent {
             SkipTheme {
                 AutoClickScreen()
@@ -68,19 +72,34 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        hideSystemBars()
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
-            hideSystemNavigationBar()
+            hideSystemBars()
         }
     }
 
-    private fun hideSystemNavigationBar() {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        WindowInsetsControllerCompat(window, window.decorView).apply {
-            hide(WindowInsetsCompat.Type.navigationBars())
-            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    private fun installInsetsAutoHide() {
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
+            val barsVisible = insets.isVisible(WindowInsetsCompat.Type.navigationBars()) ||
+                insets.isVisible(WindowInsetsCompat.Type.statusBars())
+            if (barsVisible) {
+                window.decorView.post { hideSystemBars() }
+            }
+            insets
         }
+    }
+
+    private fun hideSystemBars() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        insetsController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        insetsController.hide(WindowInsetsCompat.Type.systemBars())
     }
 }
 
