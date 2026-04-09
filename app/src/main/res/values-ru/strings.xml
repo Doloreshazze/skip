@@ -22,6 +22,9 @@
     <string name="permission_ready_message">Разрешение активно. Можно запускать автоклик.</string>
     <string name="permission_needed_message">Откройте системные настройки и включите сервис SKIP.</string>
     <string name="open_accessibility_settings">Открыть Accessibility настройки</string>
+    <string name="settings_hint_details">Открываю экран сервиса. Включите разрешение на этом экране.</string>
+    <string name="settings_hint_fallback">Если экран сервиса не открылся: Спец. возможности → Установленные/Скачанные сервисы.</string>
+    <string name="settings_hint_service_name">Найдите и откройте: %1$s</string>
 
     <string name="overlay_target_not_set">&lt;не задан&gt;</string>
     <string name="overlay_autoclick_on">Автоклик: ВКЛ (%1$s)</string>

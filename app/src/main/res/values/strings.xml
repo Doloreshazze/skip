@@ -22,6 +22,9 @@
     <string name="permission_ready_message">Permission is active. You can start auto click.</string>
     <string name="permission_needed_message">Open system settings and enable the SKIP service.</string>
     <string name="open_accessibility_settings">Open Accessibility settings</string>
+    <string name="settings_hint_details">Opening the service details screen. Turn on permission there.</string>
+    <string name="settings_hint_fallback">If details screen did not open: Accessibility → Installed apps / Downloaded apps.</string>
+    <string name="settings_hint_service_name">Find and open: %1$s</string>
 
     <string name="overlay_target_not_set">&lt;not set&gt;</string>
     <string name="overlay_autoclick_on">Auto click: ON (%1$s)</string>
