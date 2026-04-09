@@ -1,7 +1,9 @@
 package com.playeverywhere999.skip
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.Build
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -42,6 +44,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.Modifier
@@ -112,6 +118,7 @@ private fun AutoClickScreen() {
     var enabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isEnabled(context)) }
     var soundEnabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isSoundEnabled(context)) }
     var accessibilityEnabled by rememberSaveable { mutableStateOf(AccessibilityUtils.isServiceEnabled(context)) }
+    var guideRequested by rememberSaveable { mutableStateOf(AutoClickPrefs.isAccessibilityGuideRequested(context)) }
     var permissionAttentionTrigger by remember { mutableIntStateOf(0) }
     val permissionCardOffset = remember { Animatable(0f) }
 
@@ -119,6 +126,7 @@ private fun AutoClickScreen() {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 accessibilityEnabled = AccessibilityUtils.isServiceEnabled(context)
+                guideRequested = AutoClickPrefs.isAccessibilityGuideRequested(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -296,11 +304,14 @@ private fun AutoClickScreen() {
                         },
                         style = MaterialTheme.typography.bodyMedium
                     )
+                    GuideStatusRow(
+                        active = !accessibilityEnabled && guideRequested
+                    )
                     Button(
                         onClick = {
-                            context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            })
+                            AutoClickPrefs.setAccessibilityGuideRequested(context, true)
+                            guideRequested = true
+                            openAccessibilitySettings(context)
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -312,6 +323,67 @@ private fun AutoClickScreen() {
             Spacer(modifier = Modifier.height(4.dp))
         }
     }
+}
+
+private fun openAccessibilitySettings(context: android.content.Context) {
+    val serviceComponent = android.content.ComponentName(
+        context,
+        AutoClickAccessibilityService::class.java
+    )
+
+    val detailIntent = Intent(ACTION_ACCESSIBILITY_DETAILS_SETTINGS).apply {
+        data = Uri.parse("package:${context.packageName}")
+        putExtra(Intent.EXTRA_COMPONENT_NAME, serviceComponent.flattenToString())
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+
+    val fallbackIntent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+
+    val intentToLaunch = if (
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+        detailIntent.resolveActivity(context.packageManager) != null
+    ) {
+        detailIntent
+    } else {
+        fallbackIntent
+    }
+
+    context.startActivity(intentToLaunch)
+}
+
+private const val ACTION_ACCESSIBILITY_DETAILS_SETTINGS =
+    "android.settings.ACCESSIBILITY_DETAILS_SETTINGS"
+
+@Composable
+private fun GuideStatusRow(active: Boolean) {
+    val transition = rememberInfiniteTransition(label = "guideStatus")
+    val alpha by transition.animateFloat(
+        initialValue = 0.45f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 900),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "guideAlpha"
+    )
+    val tint = if (active) {
+        MaterialTheme.colorScheme.primary.copy(alpha = alpha)
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    }
+
+    Text(
+        text = if (active) {
+            stringResource(R.string.guide_status_active)
+        } else {
+            stringResource(R.string.guide_status_idle)
+        },
+        color = tint,
+        style = MaterialTheme.typography.bodySmall,
+        fontWeight = FontWeight.Medium
+    )
 }
 
 @Composable

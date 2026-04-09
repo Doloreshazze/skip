@@ -22,6 +22,10 @@
     <string name="permission_ready_message">Permission is active. You can start auto click.</string>
     <string name="permission_needed_message">Open system settings and enable the SKIP service.</string>
     <string name="open_accessibility_settings">Open Accessibility settings</string>
+    <string name="guide_hint_searching">Searching for the needed menu item…</string>
+    <string name="guide_hint_tap_service">Tap “%1$s”.</string>
+    <string name="guide_status_active">Guidance active: highlighted item will pulse in Settings.</string>
+    <string name="guide_status_idle">Guidance idle: tap the button below to start navigation help.</string>
 
     <string name="overlay_target_not_set">&lt;not set&gt;</string>
     <string name="overlay_autoclick_on">Auto click: ON (%1$s)</string>

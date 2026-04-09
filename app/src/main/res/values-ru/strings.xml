@@ -22,6 +22,10 @@
     <string name="permission_ready_message">Разрешение активно. Можно запускать автоклик.</string>
     <string name="permission_needed_message">Откройте системные настройки и включите сервис SKIP.</string>
     <string name="open_accessibility_settings">Открыть Accessibility настройки</string>
+    <string name="guide_hint_searching">Ищу нужный пункт меню…</string>
+    <string name="guide_hint_tap_service">Нажмите «%1$s».</string>
+    <string name="guide_status_active">Навигация включена: нужный пункт в настройках будет подсвечен.</string>
+    <string name="guide_status_idle">Навигация выключена: нажмите кнопку ниже, чтобы запустить подсказку.</string>
 
     <string name="overlay_target_not_set">&lt;не задан&gt;</string>
     <string name="overlay_autoclick_on">Автоклик: ВКЛ (%1$s)</string>
