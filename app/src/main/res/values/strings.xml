@@ -27,4 +27,8 @@
     <string name="overlay_autoclick_on">Auto click: ON (%1$s)</string>
     <string name="overlay_autoclick_off">Auto click: OFF</string>
     <string name="overlay_clicked">Clicked: %1$s</string>
+    <string name="guide_open_accessibility_first">Open Accessibility settings to continue guidance.</string>
+    <string name="guide_searching_service">Searching for the SKIP service item…</string>
+    <string name="guide_highlight_service">Tap “%1$s”, then enable it on the next screen.</string>
+    <string name="guide_success">Great! Accessibility service is enabled.</string>
 </resources>

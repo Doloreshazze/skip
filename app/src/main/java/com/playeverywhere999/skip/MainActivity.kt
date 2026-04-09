@@ -298,6 +298,7 @@ private fun AutoClickScreen() {
                     )
                     Button(
                         onClick = {
+                            AutoClickPrefs.setAccessibilityGuideRequested(context, !accessibilityEnabled)
                             context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             })

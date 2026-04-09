@@ -27,4 +27,8 @@
     <string name="overlay_autoclick_on">Автоклик: ВКЛ (%1$s)</string>
     <string name="overlay_autoclick_off">Автоклик: ВЫКЛ</string>
     <string name="overlay_clicked">Нажато: %1$s</string>
+    <string name="guide_open_accessibility_first">Откройте настройки специальных возможностей для продолжения подсказки.</string>
+    <string name="guide_searching_service">Ищу пункт сервиса SKIP…</string>
+    <string name="guide_highlight_service">Нажмите «%1$s», затем включите его на следующем экране.</string>
+    <string name="guide_success">Готово! Сервис специальных возможностей включён.</string>
 </resources>
