@@ -69,6 +69,10 @@ class AutoClickAccessibilityService : AccessibilityService() {
         val nodeText = node.text?.toString()?.trim()
         val nodeContentDescription = node.contentDescription?.toString()?.trim()
 
+        if (isIgnoredTargetInputNode(node)) {
+            return null
+        }
+
         val matched = nodeText.equals(targetText, ignoreCase = true) ||
             nodeContentDescription.equals(targetText, ignoreCase = true)
 
@@ -84,6 +88,14 @@ class AutoClickAccessibilityService : AccessibilityService() {
             }
         }
         return null
+    }
+
+    private fun isIgnoredTargetInputNode(node: AccessibilityNodeInfo): Boolean {
+        val nodePackageName = node.packageName?.toString()
+        val className = node.className?.toString()
+        return nodePackageName == packageName &&
+            node.isEditable &&
+            className == "android.widget.EditText"
     }
 
     private fun performClick(node: AccessibilityNodeInfo): Boolean {
