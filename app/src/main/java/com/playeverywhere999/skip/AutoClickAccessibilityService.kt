@@ -8,6 +8,7 @@ import android.graphics.Rect
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.graphics.PixelFormat
+import android.util.TypedValue
 import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Gravity
@@ -212,7 +213,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-            y = 40
+            y = topOverlayOffsetPx()
         }
 
         wm.addView(label, params)
@@ -239,14 +240,20 @@ class AutoClickAccessibilityService : AccessibilityService() {
         overlayLabel?.text = text
     }
 
-    private fun moveOverlayNear(targetBounds: Rect) {
+    private fun moveOverlayNear(@Suppress("UNUSED_PARAMETER") targetBounds: Rect) {
         val view = overlayView ?: return
         val params = view.layoutParams as? WindowManager.LayoutParams ?: return
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
         params.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-        params.y = (targetBounds.top - 160).coerceAtLeast(40)
+        params.y = topOverlayOffsetPx()
         wm.updateViewLayout(view, params)
     }
+
+    private fun topOverlayOffsetPx(): Int = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        OVERLAY_TOP_MARGIN_DP,
+        resources.displayMetrics
+    ).toInt()
 
     private fun startGuidePulse() {
         if (guidePulseStarted) return
@@ -296,6 +303,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val GUIDE_SCROLL_COOLDOWN_MS = 700L
         private const val GUIDE_PULSE_PERIOD_MS = 900L
         private const val KEY_GUIDE_REQUESTED = "accessibility_guide_requested"
+        private const val OVERLAY_TOP_MARGIN_DP = 16f
         private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
     }
 }
