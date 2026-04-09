@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">skip</string>
+    <string name="accessibility_service_name">Skip Auto Click</string>
+    <string name="accessibility_service_description">Автоматически ищет кнопку по тексту в UI-дереве и нажимает её.</string>
 </resources>
