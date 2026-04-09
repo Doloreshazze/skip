@@ -6,6 +6,9 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,10 +33,16 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -49,10 +59,26 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        hideSystemNavigationBar()
         setContent {
             SkipTheme {
                 AutoClickScreen()
             }
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            hideSystemNavigationBar()
+        }
+    }
+
+    private fun hideSystemNavigationBar() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.navigationBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
 }
@@ -66,6 +92,8 @@ private fun AutoClickScreen() {
     var enabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isEnabled(context)) }
     var soundEnabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isSoundEnabled(context)) }
     var accessibilityEnabled by rememberSaveable { mutableStateOf(AccessibilityUtils.isServiceEnabled(context)) }
+    var permissionAttentionTrigger by remember { mutableIntStateOf(0) }
+    val permissionCardOffset = remember { Animatable(0f) }
 
     DisposableEffect(lifecycleOwner, context) {
         val observer = LifecycleEventObserver { _, event ->
@@ -75,6 +103,18 @@ private fun AutoClickScreen() {
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(permissionAttentionTrigger) {
+        if (permissionAttentionTrigger == 0) return@LaunchedEffect
+
+        val shakeOffsets = listOf(-30f, 30f, -24f, 24f, -12f, 12f, 0f)
+        for (offset in shakeOffsets) {
+            permissionCardOffset.animateTo(
+                targetValue = offset,
+                animationSpec = tween(durationMillis = 45)
+            )
+        }
     }
 
     val gradientBackground = Brush.verticalGradient(
@@ -174,8 +214,12 @@ private fun AutoClickScreen() {
                         subtitle = if (enabled) "Активен" else "Выключен",
                         checked = enabled,
                         onCheckedChange = {
-                            enabled = it
-                            AutoClickPrefs.setEnabled(context, it)
+                            val canEnable = !it || accessibilityEnabled
+                            enabled = canEnable && it
+                            AutoClickPrefs.setEnabled(context, enabled)
+                            if (it && !accessibilityEnabled) {
+                                permissionAttentionTrigger++
+                            }
                         }
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
@@ -194,6 +238,7 @@ private fun AutoClickScreen() {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .offset { IntOffset(permissionCardOffset.value.toInt(), 0) }
                     .border(
                         width = 1.dp,
                         color = if (accessibilityEnabled) {
