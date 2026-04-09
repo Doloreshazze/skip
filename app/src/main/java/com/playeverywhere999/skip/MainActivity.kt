@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.playeverywhere999.skip.ui.theme.SkipTheme
@@ -149,20 +150,18 @@ private fun AutoClickScreen() {
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     Text(
-                        text = "SKIP • Автоклик",
+                        text = stringResource(R.string.hero_badge),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Минималистичный и быстрый помощник для клика по нужному тексту.",
+                        text = stringResource(R.string.hero_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "1) Введите точный текст кнопки.\n" +
-                            "2) Активируйте нужные переключатели.\n" +
-                            "3) Разрешите сервис в Accessibility.",
+                        text = stringResource(R.string.hero_steps),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -180,7 +179,7 @@ private fun AutoClickScreen() {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Что искать на экране",
+                        text = stringResource(R.string.section_target_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -191,7 +190,7 @@ private fun AutoClickScreen() {
                             AutoClickPrefs.setTargetText(context, it)
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Текст кнопки") },
+                        label = { Text(stringResource(R.string.target_text_label)) },
                         singleLine = true,
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -210,8 +209,8 @@ private fun AutoClickScreen() {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     SettingToggleRow(
-                        title = "Автоклик",
-                        subtitle = if (enabled) "Активен" else "Выключен",
+                        title = stringResource(R.string.toggle_autoclick_title),
+                        subtitle = if (enabled) stringResource(R.string.state_active) else stringResource(R.string.state_disabled),
                         checked = enabled,
                         onCheckedChange = {
                             val canEnable = !it || accessibilityEnabled
@@ -224,8 +223,8 @@ private fun AutoClickScreen() {
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                     SettingToggleRow(
-                        title = "Звуковой сигнал",
-                        subtitle = if (soundEnabled) "Включён" else "Отключён",
+                        title = stringResource(R.string.toggle_sound_title),
+                        subtitle = if (soundEnabled) stringResource(R.string.state_sound_on) else stringResource(R.string.state_sound_off),
                         checked = soundEnabled,
                         onCheckedChange = {
                             soundEnabled = it
@@ -262,15 +261,19 @@ private fun AutoClickScreen() {
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = if (accessibilityEnabled) "Сервис готов к работе" else "Нужно включить Accessibility",
+                        text = if (accessibilityEnabled) {
+                            stringResource(R.string.permission_ready_title)
+                        } else {
+                            stringResource(R.string.permission_needed_title)
+                        },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         text = if (accessibilityEnabled) {
-                            "Разрешение активно. Можно запускать автоклик."
+                            stringResource(R.string.permission_ready_message)
                         } else {
-                            "Откройте системные настройки и включите сервис SKIP."
+                            stringResource(R.string.permission_needed_message)
                         },
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -282,7 +285,7 @@ private fun AutoClickScreen() {
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Открыть Accessibility настройки", textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.open_accessibility_settings), textAlign = TextAlign.Center)
                     }
                 }
             }

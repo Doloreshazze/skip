@@ -21,8 +21,12 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var overlayLabel: TextView? = null
     private var toneGenerator: ToneGenerator? = null
     private lateinit var prefs: SharedPreferences
+    private var isAutoClickEnabled = false
+    private var isSoundEnabled = true
+    private var targetText = ""
     private val prefsChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == null) return@OnSharedPreferenceChangeListener
+        reloadPrefs()
         updateOverlayText()
     }
 
@@ -30,6 +34,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         super.onCreate()
         prefs = getSharedPreferences("auto_click_prefs", Context.MODE_PRIVATE)
         prefs.registerOnSharedPreferenceChangeListener(prefsChangeListener)
+        reloadPrefs()
     }
 
     override fun onServiceConnected() {
@@ -43,12 +48,11 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (!AutoClickPrefs.isEnabled(this)) {
+        if (!isAutoClickEnabled) {
             updateOverlayText()
             return
         }
 
-        val targetText = AutoClickPrefs.targetText(this).trim()
         if (targetText.isEmpty()) {
             updateOverlayText()
             return
@@ -65,7 +69,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         if (performClick(matchedNode)) {
             lastClickAt = now
             playClickSignalIfEnabled()
-            updateOverlayText("Нажато: $targetText")
+            updateOverlayText(getString(R.string.overlay_clicked, targetText))
         }
     }
 
@@ -166,16 +170,25 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     private fun updateOverlayText(custom: String? = null) {
         val text = custom ?: run {
-            val enabled = AutoClickPrefs.isEnabled(this)
-            val target = AutoClickPrefs.targetText(this).ifBlank { "<не задан>" }
-            if (enabled) "Автоклик: ВКЛ ($target)" else "Автоклик: ВЫКЛ"
+            val target = targetText.ifBlank { getString(R.string.overlay_target_not_set) }
+            if (isAutoClickEnabled) {
+                getString(R.string.overlay_autoclick_on, target)
+            } else {
+                getString(R.string.overlay_autoclick_off)
+            }
         }
         overlayLabel?.text = text
     }
 
     private fun playClickSignalIfEnabled() {
-        if (!AutoClickPrefs.isSoundEnabled(this)) return
+        if (!isSoundEnabled) return
         toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, BEEP_DURATION_MS)
+    }
+
+    private fun reloadPrefs() {
+        isAutoClickEnabled = prefs.getBoolean("enabled", false)
+        isSoundEnabled = prefs.getBoolean("sound_enabled", true)
+        targetText = prefs.getString("target_text", "").orEmpty().trim()
     }
 
     companion object {

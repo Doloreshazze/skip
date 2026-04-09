@@ -1,5 +1,30 @@
 <resources>
-    <string name="app_name">skip</string>
+    <string name="app_name">Skip</string>
     <string name="accessibility_service_name">Skip Auto Click</string>
-    <string name="accessibility_service_description">Автоматически ищет кнопку по тексту в UI-дереве и нажимает её.</string>
+    <string name="accessibility_service_description">Automatically finds a button by text in the UI tree and clicks it.</string>
+
+    <string name="hero_badge">SKIP • Auto Click</string>
+    <string name="hero_title">A minimalist and fast helper for tapping the needed text.</string>
+    <string name="hero_steps">1) Enter the exact button text.\n2) Enable the required toggles.\n3) Allow the service in Accessibility.</string>
+
+    <string name="section_target_title">What to find on screen</string>
+    <string name="target_text_label">Button text</string>
+
+    <string name="toggle_autoclick_title">Auto click</string>
+    <string name="toggle_sound_title">Sound signal</string>
+    <string name="state_active">Active</string>
+    <string name="state_disabled">Disabled</string>
+    <string name="state_sound_on">On</string>
+    <string name="state_sound_off">Off</string>
+
+    <string name="permission_ready_title">Service is ready</string>
+    <string name="permission_needed_title">Enable Accessibility</string>
+    <string name="permission_ready_message">Permission is active. You can start auto click.</string>
+    <string name="permission_needed_message">Open system settings and enable the SKIP service.</string>
+    <string name="open_accessibility_settings">Open Accessibility settings</string>
+
+    <string name="overlay_target_not_set">&lt;not set&gt;</string>
+    <string name="overlay_autoclick_on">Auto click: ON (%1$s)</string>
+    <string name="overlay_autoclick_off">Auto click: OFF</string>
+    <string name="overlay_clicked">Clicked: %1$s</string>
 </resources>

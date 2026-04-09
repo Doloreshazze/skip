@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Skip</string>
+    <string name="accessibility_service_name">Skip Auto Clic</string>
+    <string name="accessibility_service_description">Busca automáticamente un botón por texto en el árbol de interfaz y lo pulsa.</string>
+
+    <string name="hero_badge">SKIP • Auto Clic</string>
+    <string name="hero_title">Un asistente minimalista y rápido para pulsar el texto necesario.</string>
+    <string name="hero_steps">1) Escribe el texto exacto del botón.\n2) Activa los interruptores necesarios.\n3) Permite el servicio en Accesibilidad.</string>
+
+    <string name="section_target_title">Qué buscar en pantalla</string>
+    <string name="target_text_label">Texto del botón</string>
+
+    <string name="toggle_autoclick_title">Auto clic</string>
+    <string name="toggle_sound_title">Señal sonora</string>
+    <string name="state_active">Activo</string>
+    <string name="state_disabled">Desactivado</string>
+    <string name="state_sound_on">Encendido</string>
+    <string name="state_sound_off">Apagado</string>
+
+    <string name="permission_ready_title">Servicio listo</string>
+    <string name="permission_needed_title">Activa Accesibilidad</string>
+    <string name="permission_ready_message">El permiso está activo. Puedes iniciar el auto clic.</string>
+    <string name="permission_needed_message">Abre los ajustes del sistema y habilita el servicio SKIP.</string>
+    <string name="open_accessibility_settings">Abrir ajustes de Accesibilidad</string>
+
+    <string name="overlay_target_not_set">&lt;sin definir&gt;</string>
+    <string name="overlay_autoclick_on">Auto clic: ON (%1$s)</string>
+    <string name="overlay_autoclick_off">Auto clic: OFF</string>
+    <string name="overlay_clicked">Pulsado: %1$s</string>
+</resources>
