@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Skip</string>
+    <string name="accessibility_service_name">Skip Автоклик</string>
+    <string name="accessibility_service_description">Автоматически ищет кнопку по тексту в UI-дереве и нажимает её.</string>
+
+    <string name="hero_badge">SKIP • Автоклик</string>
+    <string name="hero_title">Минималистичный и быстрый помощник для клика по нужному тексту.</string>
+    <string name="hero_steps">1) Введите точный текст кнопки.\n2) Активируйте нужные переключатели.\n3) Разрешите сервис в Accessibility.</string>
+
+    <string name="section_target_title">Что искать на экране</string>
+    <string name="target_text_label">Текст кнопки</string>
+
+    <string name="toggle_autoclick_title">Автоклик</string>
+    <string name="toggle_sound_title">Звуковой сигнал</string>
+    <string name="state_active">Активен</string>
+    <string name="state_disabled">Выключен</string>
+    <string name="state_sound_on">Включён</string>
+    <string name="state_sound_off">Отключён</string>
+
+    <string name="permission_ready_title">Сервис готов к работе</string>
+    <string name="permission_needed_title">Нужно включить Accessibility</string>
+    <string name="permission_ready_message">Разрешение активно. Можно запускать автоклик.</string>
+    <string name="permission_needed_message">Откройте системные настройки и включите сервис SKIP.</string>
+    <string name="open_accessibility_settings">Открыть Accessibility настройки</string>
+
+    <string name="overlay_target_not_set">&lt;не задан&gt;</string>
+    <string name="overlay_autoclick_on">Автоклик: ВКЛ (%1$s)</string>
+    <string name="overlay_autoclick_off">Автоклик: ВЫКЛ</string>
+    <string name="overlay_clicked">Нажато: %1$s</string>
+</resources>

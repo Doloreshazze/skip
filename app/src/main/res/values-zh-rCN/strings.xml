@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Skip</string>
+    <string name="accessibility_service_name">Skip 自动点击</string>
+    <string name="accessibility_service_description">根据文本在界面树中自动查找按钮并点击。</string>
+
+    <string name="hero_badge">SKIP • 自动点击</string>
+    <string name="hero_title">一个极简且快速的助手，用于点击所需文本。</string>
+    <string name="hero_steps">1) 输入按钮的精确文本。\n2) 启用所需开关。\n3) 在无障碍中允许该服务。</string>
+
+    <string name="section_target_title">在屏幕上查找什么</string>
+    <string name="target_text_label">按钮文本</string>
+
+    <string name="toggle_autoclick_title">自动点击</string>
+    <string name="toggle_sound_title">声音提示</string>
+    <string name="state_active">已启用</string>
+    <string name="state_disabled">已关闭</string>
+    <string name="state_sound_on">开启</string>
+    <string name="state_sound_off">关闭</string>
+
+    <string name="permission_ready_title">服务已就绪</string>
+    <string name="permission_needed_title">请启用无障碍</string>
+    <string name="permission_ready_message">权限已启用。现在可以启动自动点击。</string>
+    <string name="permission_needed_message">打开系统设置并启用 SKIP 服务。</string>
+    <string name="open_accessibility_settings">打开无障碍设置</string>
+
+    <string name="overlay_target_not_set">&lt;未设置&gt;</string>
+    <string name="overlay_autoclick_on">自动点击：开（%1$s）</string>
+    <string name="overlay_autoclick_off">自动点击：关</string>
+    <string name="overlay_clicked">已点击：%1$s</string>
+</resources>

@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Skip</string>
+    <string name="accessibility_service_name">Skip ऑटो क्लिक</string>
+    <string name="accessibility_service_description">UI ट्री में टेक्स्ट के आधार पर बटन को अपने आप ढूँढकर क्लिक करता है।</string>
+
+    <string name="hero_badge">SKIP • ऑटो क्लिक</string>
+    <string name="hero_title">ज़रूरी टेक्स्ट पर क्लिक करने के लिए एक तेज़ और सरल सहायक।</string>
+    <string name="hero_steps">1) बटन का सटीक टेक्स्ट दर्ज करें।\n2) आवश्यक टॉगल चालू करें।\n3) Accessibility में सेवा को अनुमति दें।</string>
+
+    <string name="section_target_title">स्क्रीन पर क्या ढूँढना है</string>
+    <string name="target_text_label">बटन टेक्स्ट</string>
+
+    <string name="toggle_autoclick_title">ऑटो क्लिक</string>
+    <string name="toggle_sound_title">ध्वनि संकेत</string>
+    <string name="state_active">सक्रिय</string>
+    <string name="state_disabled">बंद</string>
+    <string name="state_sound_on">चालू</string>
+    <string name="state_sound_off">बंद</string>
+
+    <string name="permission_ready_title">सेवा तैयार है</string>
+    <string name="permission_needed_title">Accessibility चालू करें</string>
+    <string name="permission_ready_message">अनुमति सक्रिय है। आप ऑटो क्लिक शुरू कर सकते हैं।</string>
+    <string name="permission_needed_message">सिस्टम सेटिंग्स खोलें और SKIP सेवा सक्षम करें।</string>
+    <string name="open_accessibility_settings">Accessibility सेटिंग्स खोलें</string>
+
+    <string name="overlay_target_not_set">&lt;सेट नहीं&gt;</string>
+    <string name="overlay_autoclick_on">ऑटो क्लिक: ON (%1$s)</string>
+    <string name="overlay_autoclick_off">ऑटो क्लिक: OFF</string>
+    <string name="overlay_clicked">क्लिक किया गया: %1$s</string>
+</resources>
