@@ -1,7 +1,9 @@
 package com.playeverywhere999.skip
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.Build
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -298,10 +300,7 @@ private fun AutoClickScreen() {
                     )
                     Button(
                         onClick = {
-                            AutoClickPrefs.setAccessibilityGuideRequested(context, !accessibilityEnabled)
-                            context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            })
+                            openAccessibilitySettings(context)
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -313,6 +312,34 @@ private fun AutoClickScreen() {
             Spacer(modifier = Modifier.height(4.dp))
         }
     }
+}
+
+private fun openAccessibilitySettings(context: android.content.Context) {
+    val serviceComponent = android.content.ComponentName(
+        context,
+        AutoClickAccessibilityService::class.java
+    )
+
+    val detailIntent = Intent(Settings.ACTION_ACCESSIBILITY_DETAILS_SETTINGS).apply {
+        data = Uri.parse("package:${context.packageName}")
+        putExtra(Intent.EXTRA_COMPONENT_NAME, serviceComponent.flattenToString())
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+
+    val fallbackIntent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+
+    val intentToLaunch = if (
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+        detailIntent.resolveActivity(context.packageManager) != null
+    ) {
+        detailIntent
+    } else {
+        fallbackIntent
+    }
+
+    context.startActivity(intentToLaunch)
 }
 
 @Composable

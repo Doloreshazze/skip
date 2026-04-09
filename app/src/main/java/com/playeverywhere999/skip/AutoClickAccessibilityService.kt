@@ -4,12 +4,10 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.Rect
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.graphics.PixelFormat
 import android.os.SystemClock
-import android.view.Choreographer
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -26,18 +24,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var isAutoClickEnabled = false
     private var isSoundEnabled = true
     private var targetText = ""
-    private var accessibilityGuideRequested = false
-    private var guideLastScrollAt = 0L
-    private var guidePulseStarted = false
-    private val guidePulseCallback = object : Choreographer.FrameCallback {
-        override fun doFrame(frameTimeNanos: Long) {
-            if (!guidePulseStarted) return
-            val frameTimeMs = frameTimeNanos / 1_000_000L
-            val wave = kotlin.math.sin(frameTimeMs / GUIDE_PULSE_PERIOD_MS.toDouble() * Math.PI * 2.0)
-            overlayLabel?.alpha = (0.55f + (wave.toFloat() + 1f) * 0.18f).coerceIn(0.5f, 0.95f)
-            Choreographer.getInstance().postFrameCallback(this)
-        }
-    }
     private val prefsChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == null) return@OnSharedPreferenceChangeListener
         reloadPrefs()
@@ -62,8 +48,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        handleAccessibilityGuide()
-
         if (!isAutoClickEnabled) {
             updateOverlayText()
             return
@@ -97,57 +81,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
             prefs.unregisterOnSharedPreferenceChangeListener(prefsChangeListener)
         }
         detachOverlay()
-        stopGuidePulse()
         toneGenerator?.release()
         toneGenerator = null
-    }
-
-    private fun handleAccessibilityGuide() {
-        if (!accessibilityGuideRequested) {
-            stopGuidePulse()
-            return
-        }
-
-        if (AccessibilityUtils.isServiceEnabled(this)) {
-            accessibilityGuideRequested = false
-            prefs.edit().putBoolean(KEY_GUIDE_REQUESTED, false).apply()
-            updateOverlayText(getString(R.string.guide_success))
-            stopGuidePulse()
-            return
-        }
-
-        val root = rootInActiveWindow ?: return
-        val packageName = root.packageName?.toString().orEmpty()
-        if (packageName !in SETTINGS_PACKAGES) {
-            updateOverlayText(getString(R.string.guide_open_accessibility_first))
-            stopGuidePulse()
-            return
-        }
-
-        val target = findNodeByTextContains(root, getString(R.string.accessibility_service_name))
-        if (target != null) {
-            startGuidePulse()
-            val bounds = Rect()
-            target.getBoundsInScreen(bounds)
-            updateOverlayText(
-                getString(
-                    R.string.guide_highlight_service,
-                    getString(R.string.accessibility_service_name)
-                )
-            )
-            moveOverlayNear(bounds)
-            return
-        }
-
-        val now = SystemClock.elapsedRealtime()
-        if (now - guideLastScrollAt >= GUIDE_SCROLL_COOLDOWN_MS) {
-            val didScroll = root.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
-            if (didScroll) {
-                guideLastScrollAt = now
-            }
-        }
-        startGuidePulse()
-        updateOverlayText(getString(R.string.guide_searching_service))
     }
 
     private fun findNodeByText(node: AccessibilityNodeInfo, targetText: String): AccessibilityNodeInfo? {
@@ -245,28 +180,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
         overlayLabel?.text = text
     }
 
-    private fun moveOverlayNear(targetBounds: Rect) {
-        val view = overlayView ?: return
-        val params = view.layoutParams as? WindowManager.LayoutParams ?: return
-        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        params.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-        params.y = (targetBounds.top - 160).coerceAtLeast(40)
-        wm.updateViewLayout(view, params)
-    }
-
-    private fun startGuidePulse() {
-        if (guidePulseStarted) return
-        guidePulseStarted = true
-        Choreographer.getInstance().postFrameCallback(guidePulseCallback)
-    }
-
-    private fun stopGuidePulse() {
-        if (!guidePulseStarted) return
-        guidePulseStarted = false
-        Choreographer.getInstance().removeFrameCallback(guidePulseCallback)
-        overlayLabel?.alpha = 1f
-    }
-
     private fun playClickSignalIfEnabled() {
         if (!isSoundEnabled) return
         toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, BEEP_DURATION_MS)
@@ -276,32 +189,11 @@ class AutoClickAccessibilityService : AccessibilityService() {
         isAutoClickEnabled = prefs.getBoolean("enabled", false)
         isSoundEnabled = prefs.getBoolean("sound_enabled", true)
         targetText = prefs.getString("target_text", "").orEmpty().trim()
-        accessibilityGuideRequested = prefs.getBoolean(KEY_GUIDE_REQUESTED, false)
-    }
-
-    private fun findNodeByTextContains(node: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
-        val nodeText = node.text?.toString().orEmpty()
-        val contentDescription = node.contentDescription?.toString().orEmpty()
-        if (nodeText.contains(text, ignoreCase = true) ||
-            contentDescription.contains(text, ignoreCase = true)
-        ) {
-            return node
-        }
-        for (i in 0 until node.childCount) {
-            val child = node.getChild(i) ?: continue
-            val result = findNodeByTextContains(child, text)
-            if (result != null) return result
-        }
-        return null
     }
 
     companion object {
         private const val CLICK_COOLDOWN_MS = 1200L
         private const val BEEP_DURATION_MS = 120
         private const val TONE_VOLUME = 80
-        private const val GUIDE_SCROLL_COOLDOWN_MS = 700L
-        private const val GUIDE_PULSE_PERIOD_MS = 900L
-        private const val KEY_GUIDE_REQUESTED = "accessibility_guide_requested"
-        private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
     }
 }

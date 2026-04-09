@@ -7,7 +7,6 @@ object AutoClickPrefs {
     private const val KEY_TARGET_TEXT = "target_text"
     private const val KEY_ENABLED = "enabled"
     private const val KEY_SOUND_ENABLED = "sound_enabled"
-    private const val KEY_ACCESSIBILITY_GUIDE_REQUESTED = "accessibility_guide_requested"
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun targetText(context: Context): String {
@@ -44,18 +43,6 @@ object AutoClickPrefs {
         prefs(context)
             .edit()
             .putBoolean(KEY_SOUND_ENABLED, value)
-            .apply()
-    }
-
-    fun isAccessibilityGuideRequested(context: Context): Boolean {
-        return prefs(context)
-            .getBoolean(KEY_ACCESSIBILITY_GUIDE_REQUESTED, false)
-    }
-
-    fun setAccessibilityGuideRequested(context: Context, value: Boolean) {
-        prefs(context)
-            .edit()
-            .putBoolean(KEY_ACCESSIBILITY_GUIDE_REQUESTED, value)
             .apply()
     }
 }
