@@ -6,6 +6,7 @@ object AutoClickPrefs {
     private const val PREFS_NAME = "auto_click_prefs"
     private const val KEY_TARGET_TEXT = "target_text"
     private const val KEY_ENABLED = "enabled"
+    private const val KEY_SOUND_ENABLED = "sound_enabled"
 
     fun targetText(context: Context): String {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -29,6 +30,18 @@ object AutoClickPrefs {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
             .putBoolean(KEY_ENABLED, value)
+            .apply()
+    }
+
+    fun isSoundEnabled(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_SOUND_ENABLED, true)
+    }
+
+    fun setSoundEnabled(context: Context, value: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_SOUND_ENABLED, value)
             .apply()
     }
 }

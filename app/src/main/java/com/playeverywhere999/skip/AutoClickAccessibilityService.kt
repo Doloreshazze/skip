@@ -2,6 +2,8 @@ package com.playeverywhere999.skip
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.graphics.PixelFormat
 import android.os.SystemClock
 import android.view.Gravity
@@ -15,12 +17,14 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var lastClickAt = 0L
     private var overlayView: View? = null
     private var overlayLabel: TextView? = null
+    private var toneGenerator: ToneGenerator? = null
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         serviceInfo = serviceInfo.apply {
             flags = flags or AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
         }
+        toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, TONE_VOLUME)
         attachOverlay()
         updateOverlayText()
     }
@@ -47,6 +51,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
         if (performClick(matchedNode)) {
             lastClickAt = now
+            playClickSignalIfEnabled()
             updateOverlayText("Нажато: $targetText")
         }
     }
@@ -56,6 +61,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         super.onDestroy()
         detachOverlay()
+        toneGenerator?.release()
+        toneGenerator = null
     }
 
     private fun findNodeByText(node: AccessibilityNodeInfo, targetText: String): AccessibilityNodeInfo? {
@@ -138,7 +145,14 @@ class AutoClickAccessibilityService : AccessibilityService() {
         overlayLabel?.text = text
     }
 
+    private fun playClickSignalIfEnabled() {
+        if (!AutoClickPrefs.isSoundEnabled(this)) return
+        toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, BEEP_DURATION_MS)
+    }
+
     companion object {
         private const val CLICK_COOLDOWN_MS = 1200L
+        private const val BEEP_DURATION_MS = 120
+        private const val TONE_VOLUME = 80
     }
 }

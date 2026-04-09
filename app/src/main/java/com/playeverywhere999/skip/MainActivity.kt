@@ -44,6 +44,7 @@ private fun AutoClickScreen() {
     val context = LocalContext.current
     var targetText by rememberSaveable { mutableStateOf(AutoClickPrefs.targetText(context)) }
     var enabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isEnabled(context)) }
+    var soundEnabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isSoundEnabled(context)) }
 
     Column(
         modifier = Modifier
@@ -83,6 +84,17 @@ private fun AutoClickScreen() {
                 onCheckedChange = {
                     enabled = it
                     AutoClickPrefs.setEnabled(context, it)
+                }
+            )
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(text = if (soundEnabled) "Звуковой сигнал: включен" else "Звуковой сигнал: выключен")
+            Switch(
+                checked = soundEnabled,
+                onCheckedChange = {
+                    soundEnabled = it
+                    AutoClickPrefs.setSoundEnabled(context, it)
                 }
             )
         }
