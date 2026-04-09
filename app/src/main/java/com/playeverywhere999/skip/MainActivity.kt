@@ -4,10 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.provider.Settings
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -303,6 +300,7 @@ private fun AutoClickScreen() {
                     )
                     Button(
                         onClick = {
+                            AutoClickPrefs.setAccessibilityGuideRequested(context, true)
                             openAccessibilitySettings(context)
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -342,35 +340,11 @@ private fun openAccessibilitySettings(context: android.content.Context) {
         fallbackIntent
     }
 
-    showSettingsHints(context, intentToLaunch == detailIntent)
     context.startActivity(intentToLaunch)
 }
 
 private const val ACTION_ACCESSIBILITY_DETAILS_SETTINGS =
     "android.settings.ACCESSIBILITY_DETAILS_SETTINGS"
-
-private fun showSettingsHints(context: android.content.Context, deepLinkToDetails: Boolean) {
-    val appContext = context.applicationContext
-    val handler = Handler(Looper.getMainLooper())
-
-    val firstHint = if (deepLinkToDetails) {
-        appContext.getString(R.string.settings_hint_details)
-    } else {
-        appContext.getString(R.string.settings_hint_fallback)
-    }
-
-    val secondHint = appContext.getString(
-        R.string.settings_hint_service_name,
-        appContext.getString(R.string.accessibility_service_name)
-    )
-
-    handler.post {
-        Toast.makeText(appContext, firstHint, Toast.LENGTH_LONG).show()
-    }
-    handler.postDelayed({
-        Toast.makeText(appContext, secondHint, Toast.LENGTH_LONG).show()
-    }, 1800L)
-}
 
 @Composable
 private fun SettingToggleRow(
