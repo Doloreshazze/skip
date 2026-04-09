@@ -171,11 +171,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun isIgnoredTargetInputNode(node: AccessibilityNodeInfo): Boolean {
-        val nodePackageName = node.packageName?.toString()
-        val className = node.className?.toString()
-        return nodePackageName == packageName &&
-            node.isEditable &&
-            className == "android.widget.EditText"
+        val className = node.className?.toString().orEmpty()
+        return node.isEditable || className == "android.widget.EditText"
     }
 
     private fun performClick(node: AccessibilityNodeInfo): Boolean {
