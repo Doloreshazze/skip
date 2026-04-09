@@ -17,14 +17,18 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.playeverywhere999.skip.ui.theme.SkipTheme
 
 class MainActivity : ComponentActivity() {
@@ -42,9 +46,22 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun AutoClickScreen() {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     var targetText by rememberSaveable { mutableStateOf(AutoClickPrefs.targetText(context)) }
     var enabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isEnabled(context)) }
     var soundEnabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isSoundEnabled(context)) }
+    var accessibilityEnabled by rememberSaveable { mutableStateOf(AccessibilityUtils.isServiceEnabled(context)) }
+
+    DisposableEffect(lifecycleOwner, context) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                accessibilityEnabled = AccessibilityUtils.isServiceEnabled(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     Column(
         modifier = Modifier
@@ -61,8 +78,7 @@ private fun AutoClickScreen() {
         Text(
             text = "1) Введите точный текст кнопки.\n" +
                 "2) Включите переключатель.\n" +
-                "3) Выдайте Accessibility-доступ (кнопка ниже).\n" +
-                "После этого сервис будет сканировать UI-дерево поверх любых приложений и нажимать найденную кнопку.",
+                "3) Один раз включите сервис в Accessibility (Android обычно запоминает это даже после перезагрузки устройства).",
             style = MaterialTheme.typography.bodyMedium
         )
 
@@ -98,6 +114,16 @@ private fun AutoClickScreen() {
                 }
             )
         }
+
+        Text(
+            text = if (accessibilityEnabled) {
+                "Accessibility сервис: включен"
+            } else {
+                "Accessibility сервис: выключен"
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium
+        )
 
         Button(
             onClick = {
