@@ -258,6 +258,10 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun updateOverlayText(custom: String? = null) {
+        val shouldHideStatus = custom == null && !isAutoClickEnabled
+        overlayLabel?.visibility = if (shouldHideStatus) View.GONE else View.VISIBLE
+        if (shouldHideStatus) return
+
         val text = custom ?: run {
             val target = targetText.ifBlank { getString(R.string.overlay_target_not_set) }
             if (isAutoClickEnabled) {
