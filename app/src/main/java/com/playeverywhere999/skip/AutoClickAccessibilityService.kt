@@ -202,13 +202,14 @@ class AutoClickAccessibilityService : AccessibilityService() {
             setPadding(24, 12, 24, 12)
             setBackgroundColor(0xAA000000.toInt())
             setTextColor(0xFFFFFFFF.toInt())
+            isClickable = true
         }
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
@@ -235,6 +236,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
                     wm.updateViewLayout(label, currentParams)
                     true
                 }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> true
 
                 else -> false
             }
