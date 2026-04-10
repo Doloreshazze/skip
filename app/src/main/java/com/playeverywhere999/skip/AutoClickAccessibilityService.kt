@@ -12,6 +12,7 @@ import android.util.TypedValue
 import android.os.SystemClock
 import android.view.Choreographer
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
@@ -22,6 +23,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var lastClickAt = 0L
     private var overlayView: View? = null
     private var overlayLabel: TextView? = null
+    private var overlayLayoutParams: WindowManager.LayoutParams? = null
     private var toneGenerator: ToneGenerator? = null
     private lateinit var prefs: SharedPreferences
     private var isAutoClickEnabled = false
@@ -200,22 +202,51 @@ class AutoClickAccessibilityService : AccessibilityService() {
             setPadding(24, 12, 24, 12)
             setBackgroundColor(0xAA000000.toInt())
             setTextColor(0xFFFFFFFF.toInt())
+            isClickable = true
         }
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            gravity = Gravity.TOP or Gravity.START
+            x = 0
             y = topOverlayOffsetPx()
+        }
+
+        label.setOnTouchListener { _, event ->
+            val currentParams = overlayLayoutParams ?: return@setOnTouchListener false
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    dragStartX = currentParams.x
+                    dragStartY = currentParams.y
+                    touchStartRawX = event.rawX
+                    touchStartRawY = event.rawY
+                    true
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    val deltaX = (event.rawX - touchStartRawX).toInt()
+                    val deltaY = (event.rawY - touchStartRawY).toInt()
+                    currentParams.x = dragStartX + deltaX
+                    currentParams.y = (dragStartY + deltaY).coerceAtLeast(0)
+                    wm.updateViewLayout(label, currentParams)
+                    true
+                }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> true
+
+                else -> false
+            }
         }
 
         wm.addView(label, params)
         overlayView = label
         overlayLabel = label
+        overlayLayoutParams = params
     }
 
     private fun detachOverlay() {
@@ -223,6 +254,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         overlayView?.let { wm.removeView(it) }
         overlayView = null
         overlayLabel = null
+        overlayLayoutParams = null
     }
 
     private fun updateOverlayText(custom: String? = null) {
@@ -239,9 +271,10 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     private fun moveOverlayNear(@Suppress("UNUSED_PARAMETER") targetBounds: Rect) {
         val view = overlayView ?: return
-        val params = view.layoutParams as? WindowManager.LayoutParams ?: return
+        val params = overlayLayoutParams ?: return
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        params.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+        params.gravity = Gravity.TOP or Gravity.START
+        params.x = 0
         params.y = topOverlayOffsetPx()
         wm.updateViewLayout(view, params)
     }
@@ -251,6 +284,11 @@ class AutoClickAccessibilityService : AccessibilityService() {
         OVERLAY_TOP_MARGIN_DP,
         resources.displayMetrics
     ).toInt()
+
+    private var dragStartX = 0
+    private var dragStartY = 0
+    private var touchStartRawX = 0f
+    private var touchStartRawY = 0f
 
     private fun startGuidePulse() {
         if (guidePulseStarted) return
