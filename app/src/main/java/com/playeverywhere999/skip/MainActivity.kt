@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.ViewCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,7 +25,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -51,6 +55,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -158,169 +163,177 @@ private fun AutoClickScreen() {
             .fillMaxSize()
             .background(gradientBackground)
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.hero_badge),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = stringResource(R.string.hero_title),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = stringResource(R.string.hero_steps),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.section_target_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    OutlinedTextField(
-                        value = targetText,
-                        onValueChange = {
-                            targetText = it
-                            AutoClickPrefs.setTargetText(context, it)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(R.string.target_text_label)) },
-                        singleLine = true,
-                        shape = RoundedCornerShape(14.dp)
-                    )
-                }
-            }
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    SettingToggleRow(
-                        title = stringResource(R.string.toggle_autoclick_title),
-                        subtitle = if (enabled) stringResource(R.string.state_active) else stringResource(R.string.state_disabled),
-                        checked = enabled,
-                        onCheckedChange = {
-                            val canEnable = !it || accessibilityEnabled
-                            enabled = canEnable && it
-                            AutoClickPrefs.setEnabled(context, enabled)
-                            if (it && !accessibilityEnabled) {
-                                permissionAttentionTrigger++
-                            }
-                        }
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                    SettingToggleRow(
-                        title = stringResource(R.string.toggle_sound_title),
-                        subtitle = if (soundEnabled) stringResource(R.string.state_sound_on) else stringResource(R.string.state_sound_off),
-                        checked = soundEnabled,
-                        onCheckedChange = {
-                            soundEnabled = it
-                            AutoClickPrefs.setSoundEnabled(context, it)
-                        }
-                    )
-                }
-            }
-
-            Card(
+            Column(
                 modifier = Modifier
+                    .align(Alignment.TopCenter)
                     .fillMaxWidth()
-                    .offset { IntOffset(permissionCardOffset.value.toInt(), 0) }
-                    .border(
-                        width = 1.dp,
-                        color = if (accessibilityEnabled) {
-                            Color(0xFF2E7D32).copy(alpha = 0.3f)
-                        } else {
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                        },
-                        shape = RoundedCornerShape(20.dp)
-                    ),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (accessibilityEnabled) {
-                        Color(0xFF2E7D32).copy(alpha = 0.09f)
-                    } else {
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-                    }
-                )
+                    .widthIn(max = 640.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Text(
-                        text = if (accessibilityEnabled) {
-                            stringResource(R.string.permission_ready_title)
-                        } else {
-                            stringResource(R.string.permission_needed_title)
-                        },
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = if (accessibilityEnabled) {
-                            stringResource(R.string.permission_ready_message)
-                        } else {
-                            stringResource(R.string.permission_needed_message)
-                        },
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    GuideStatusRow(
-                        active = !accessibilityEnabled && guideRequested
-                    )
-                    Button(
-                        onClick = {
-                            AutoClickPrefs.setAccessibilityGuideRequested(context, true)
-                            guideRequested = true
-                            openAccessibilitySettings(context)
-                        },
-                        modifier = Modifier.fillMaxWidth()
+                    Column(
+                        modifier = Modifier.padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        Text(stringResource(R.string.open_accessibility_settings), textAlign = TextAlign.Center)
+                        Text(
+                            text = stringResource(R.string.hero_badge),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = stringResource(R.string.hero_title),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(R.string.hero_steps),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(4.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.section_target_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        OutlinedTextField(
+                            value = targetText,
+                            onValueChange = {
+                                targetText = it
+                                AutoClickPrefs.setTargetText(context, it)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text(stringResource(R.string.target_text_label)) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(14.dp)
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        SettingToggleRow(
+                            title = stringResource(R.string.toggle_autoclick_title),
+                            subtitle = if (enabled) stringResource(R.string.state_active) else stringResource(R.string.state_disabled),
+                            checked = enabled,
+                            onCheckedChange = {
+                                val canEnable = !it || accessibilityEnabled
+                                enabled = canEnable && it
+                                AutoClickPrefs.setEnabled(context, enabled)
+                                if (it && !accessibilityEnabled) {
+                                    permissionAttentionTrigger++
+                                }
+                            }
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                        SettingToggleRow(
+                            title = stringResource(R.string.toggle_sound_title),
+                            subtitle = if (soundEnabled) stringResource(R.string.state_sound_on) else stringResource(R.string.state_sound_off),
+                            checked = soundEnabled,
+                            onCheckedChange = {
+                                soundEnabled = it
+                                AutoClickPrefs.setSoundEnabled(context, it)
+                            }
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(permissionCardOffset.value.toInt(), 0) }
+                        .border(
+                            width = 1.dp,
+                            color = if (accessibilityEnabled) {
+                                Color(0xFF2E7D32).copy(alpha = 0.3f)
+                            } else {
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                            },
+                            shape = RoundedCornerShape(20.dp)
+                        ),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (accessibilityEnabled) {
+                            Color(0xFF2E7D32).copy(alpha = 0.09f)
+                        } else {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                        }
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = if (accessibilityEnabled) {
+                                stringResource(R.string.permission_ready_title)
+                            } else {
+                                stringResource(R.string.permission_needed_title)
+                            },
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = if (accessibilityEnabled) {
+                                stringResource(R.string.permission_ready_message)
+                            } else {
+                                stringResource(R.string.permission_needed_message)
+                            },
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        GuideStatusRow(
+                            active = !accessibilityEnabled && guideRequested
+                        )
+                        Button(
+                            onClick = {
+                                AutoClickPrefs.setAccessibilityGuideRequested(context, true)
+                                guideRequested = true
+                                openAccessibilitySettings(context)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.open_accessibility_settings), textAlign = TextAlign.Center)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+            }
         }
     }
 }
