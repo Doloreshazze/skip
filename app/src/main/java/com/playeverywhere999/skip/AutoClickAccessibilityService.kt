@@ -59,6 +59,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private val prefsChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == null) return@OnSharedPreferenceChangeListener
         reloadPrefs()
+        if (key == KEY_ENABLED && isAutoClickEnabled) {
+            overlayDismissed = false
+        }
         updatePlayPauseIcon()
         updateOverlayVisibility()
         updateOverlayText()
