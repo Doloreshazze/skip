@@ -61,6 +61,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         reloadPrefs()
         if (key == KEY_ENABLED && isAutoClickEnabled) {
             overlayDismissed = false
+            resetOverlayPositionToDefault()
         }
         updatePlayPauseIcon()
         updateOverlayVisibility()
@@ -436,6 +437,16 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun moveOverlayNear(@Suppress("UNUSED_PARAMETER") targetBounds: Rect) {
+        val view = overlayView ?: return
+        val params = overlayLayoutParams ?: return
+        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        params.gravity = Gravity.TOP or Gravity.START
+        params.x = 0
+        params.y = topOverlayOffsetPx()
+        wm.updateViewLayout(view, params)
+    }
+
+    private fun resetOverlayPositionToDefault() {
         val view = overlayView ?: return
         val params = overlayLayoutParams ?: return
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
