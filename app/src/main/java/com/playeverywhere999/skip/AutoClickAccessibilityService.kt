@@ -20,15 +20,12 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 
 class AutoClickAccessibilityService : AccessibilityService() {
     private var lastClickAt = 0L
     private var overlayView: View? = null
-    private var overlayLabel: TextView? = null
-    private var overlayActionGroup: LinearLayout? = null
+    private var overlayContainer: LinearLayout? = null
     private var playPauseButton: ImageButton? = null
-    private var moveButton: ImageButton? = null
     private var offButton: ImageButton? = null
     private var overlayLayoutParams: WindowManager.LayoutParams? = null
     private var toneGenerator: ToneGenerator? = null
@@ -39,14 +36,12 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var accessibilityGuideRequested = false
     private var guideLastScrollAt = 0L
     private var guidePulseStarted = false
-    private var controlsVisible = false
-    private val controlsAutoHideRunnable = Runnable { hideOverlayControls() }
     private val guidePulseCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
             if (!guidePulseStarted) return
             val frameTimeMs = frameTimeNanos / 1_000_000L
             val wave = kotlin.math.sin(frameTimeMs / GUIDE_PULSE_PERIOD_MS.toDouble() * Math.PI * 2.0)
-            overlayLabel?.alpha = (0.55f + (wave.toFloat() + 1f) * 0.18f).coerceIn(0.5f, 0.95f)
+            overlayContainer?.alpha = (0.55f + (wave.toFloat() + 1f) * 0.18f).coerceIn(0.5f, 0.95f)
             Choreographer.getInstance().postFrameCallback(this)
         }
     }
@@ -208,33 +203,16 @@ class AutoClickAccessibilityService : AccessibilityService() {
         if (overlayView != null) return
 
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        val label = TextView(this).apply {
-            textSize = 12f
-            setPadding(24, 12, 24, 12)
-            setBackgroundColor(0xAA000000.toInt())
-            setTextColor(0xFFFFFFFF.toInt())
-            isClickable = true
-        }
-
-        val actionGroup = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            visibility = View.GONE
-            setPadding(8, 0, 0, 0)
-        }
-
         val playPause = createActionButton(android.R.drawable.ic_media_pause)
-        val move = createActionButton(android.R.drawable.ic_menu_directions)
         val off = createActionButton(android.R.drawable.ic_lock_power_off)
-
-        actionGroup.addView(playPause)
-        actionGroup.addView(move)
-        actionGroup.addView(off)
 
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            addView(label)
-            addView(actionGroup)
+            setPadding(12, 12, 12, 12)
+            setBackgroundColor(0xAA000000.toInt())
+            addView(playPause)
+            addView(off)
         }
 
         val params = WindowManager.LayoutParams(
@@ -249,23 +227,21 @@ class AutoClickAccessibilityService : AccessibilityService() {
             y = topOverlayOffsetPx()
         }
 
-        label.setOnClickListener {
-            if (controlsVisible) {
-                hideOverlayControls()
-            } else {
-                showOverlayControls()
-            }
-        }
-
         playPause.setOnClickListener {
             isAutoClickEnabled = !isAutoClickEnabled
             prefs.edit().putBoolean(KEY_ENABLED, isAutoClickEnabled).apply()
             updatePlayPauseIcon()
             updateOverlayText()
-            scheduleControlsAutoHide()
         }
 
-        move.setOnTouchListener { _, event ->
+        off.setOnClickListener {
+            isAutoClickEnabled = false
+            prefs.edit().putBoolean(KEY_ENABLED, false).apply()
+            updatePlayPauseIcon()
+            updateOverlayText()
+        }
+
+        container.setOnTouchListener { _, event ->
             val currentParams = overlayLayoutParams ?: return@setOnTouchListener false
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
@@ -285,29 +261,16 @@ class AutoClickAccessibilityService : AccessibilityService() {
                     true
                 }
 
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    scheduleControlsAutoHide()
-                    true
-                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> false
 
                 else -> false
             }
         }
 
-        off.setOnClickListener {
-            isAutoClickEnabled = false
-            prefs.edit().putBoolean(KEY_ENABLED, false).apply()
-            updatePlayPauseIcon()
-            updateOverlayText()
-            hideOverlayControls()
-        }
-
         wm.addView(container, params)
         overlayView = container
-        overlayLabel = label
-        overlayActionGroup = actionGroup
+        overlayContainer = container
         playPauseButton = playPause
-        moveButton = move
         offButton = off
         overlayLayoutParams = params
     }
@@ -320,31 +283,14 @@ class AutoClickAccessibilityService : AccessibilityService() {
         ).toInt()
         return ImageButton(this).apply {
             setImageResource(iconResId)
-            setBackgroundColor(0xCC111111.toInt())
+            setBackgroundColor(0x00000000)
             setColorFilter(0xFFFFFFFF.toInt())
             scaleType = ImageView.ScaleType.CENTER_INSIDE
             layoutParams = LinearLayout.LayoutParams(sizePx, sizePx).apply {
-                marginStart = 8
+                marginStart = 4
+                marginEnd = 4
             }
         }
-    }
-
-    private fun showOverlayControls() {
-        overlayActionGroup?.visibility = View.VISIBLE
-        controlsVisible = true
-        scheduleControlsAutoHide()
-    }
-
-    private fun hideOverlayControls() {
-        overlayActionGroup?.removeCallbacks(controlsAutoHideRunnable)
-        overlayActionGroup?.visibility = View.GONE
-        controlsVisible = false
-    }
-
-    private fun scheduleControlsAutoHide() {
-        val actionGroup = overlayActionGroup ?: return
-        actionGroup.removeCallbacks(controlsAutoHideRunnable)
-        actionGroup.postDelayed(controlsAutoHideRunnable, CONTROLS_AUTO_HIDE_MS)
     }
 
     private fun updatePlayPauseIcon() {
@@ -360,19 +306,14 @@ class AutoClickAccessibilityService : AccessibilityService() {
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
         overlayView?.let { wm.removeView(it) }
         overlayView = null
-        overlayLabel = null
-        overlayActionGroup = null
+        overlayContainer = null
         playPauseButton = null
-        moveButton = null
         offButton = null
         overlayLayoutParams = null
-        controlsVisible = false
     }
 
     private fun updateOverlayText(custom: String? = null) {
-        overlayLabel?.visibility = View.VISIBLE
-
-        val text = custom ?: run {
+        val statusText = custom ?: run {
             val target = targetText.ifBlank { getString(R.string.overlay_target_not_set) }
             if (isAutoClickEnabled) {
                 getString(R.string.overlay_autoclick_on, target)
@@ -380,7 +321,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
                 getString(R.string.overlay_autoclick_off)
             }
         }
-        overlayLabel?.text = text
+        playPauseButton?.contentDescription = statusText
+        offButton?.contentDescription = getString(R.string.overlay_autoclick_off)
     }
 
     private fun moveOverlayNear(@Suppress("UNUSED_PARAMETER") targetBounds: Rect) {
@@ -414,7 +356,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         if (!guidePulseStarted) return
         guidePulseStarted = false
         Choreographer.getInstance().removeFrameCallback(guidePulseCallback)
-        overlayLabel?.alpha = 1f
+        overlayContainer?.alpha = 1f
     }
 
     private fun playClickSignalIfEnabled() {
@@ -455,7 +397,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val KEY_ENABLED = "enabled"
         private const val OVERLAY_TOP_MARGIN_DP = 16f
         private const val ACTION_BUTTON_SIZE_DP = 36f
-        private const val CONTROLS_AUTO_HIDE_MS = 5_000L
         private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
     }
 }
