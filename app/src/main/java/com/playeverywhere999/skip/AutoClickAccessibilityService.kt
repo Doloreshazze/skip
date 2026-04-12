@@ -39,6 +39,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var isSoundEnabled = true
     private var targetText = ""
     private var accessibilityGuideRequested = false
+    private var guideTargetSeen = false
     private var guideLastScrollAt = 0L
     private var guidePulseStarted = false
     private var overlayDismissed = false
@@ -133,6 +134,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private fun handleSettingsGuide() {
         if (!accessibilityGuideRequested) {
             stopGuidePulse()
+            guideTargetSeen = false
             return
         }
 
@@ -145,6 +147,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
         val target = findNodeByTextContains(root, getString(R.string.accessibility_service_name))
         if (target != null) {
+            guideTargetSeen = true
             startGuidePulse()
             target.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)
             val bounds = Rect()
@@ -156,14 +159,23 @@ class AutoClickAccessibilityService : AccessibilityService() {
                     getString(R.string.accessibility_service_name)
                 )
             )
+            return
+        }
+
+        if (guideTargetSeen) {
+            // После перехода в карточку службы строка больше не видна.
+            // Считаем, что пользователь уже нажал нужный пункт.
             prefs.edit().putBoolean(KEY_GUIDE_REQUESTED, false).apply()
             accessibilityGuideRequested = false
+            guideTargetSeen = false
+            stopGuidePulse()
             return
         }
 
         val now = SystemClock.elapsedRealtime()
         if (now - guideLastScrollAt >= GUIDE_SCROLL_COOLDOWN_MS) {
-            val didScroll = root.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+            val scrollableNode = findFirstScrollableNode(root)
+            val didScroll = scrollableNode?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD) == true
             if (didScroll) {
                 guideLastScrollAt = now
             }
@@ -524,6 +536,16 @@ class AutoClickAccessibilityService : AccessibilityService() {
         for (i in 0 until node.childCount) {
             val child = node.getChild(i) ?: continue
             val result = findNodeByTextContains(child, text)
+            if (result != null) return result
+        }
+        return null
+    }
+
+    private fun findFirstScrollableNode(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        if (node.isScrollable) return node
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            val result = findFirstScrollableNode(child)
             if (result != null) return result
         }
         return null
