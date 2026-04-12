@@ -8,6 +8,8 @@ import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.media.AudioManager
 import android.media.ToneGenerator
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.util.TypedValue
 import android.view.Choreographer
@@ -26,8 +28,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var overlayView: View? = null
     private var overlayContainer: LinearLayout? = null
     private var playPauseButton: ImageButton? = null
-    private var offButton: ImageButton? = null
+    private var closeDropView: ImageView? = null
     private var overlayLayoutParams: WindowManager.LayoutParams? = null
+    private var closeDropLayoutParams: WindowManager.LayoutParams? = null
     private var toneGenerator: ToneGenerator? = null
     private lateinit var prefs: SharedPreferences
     private var isAutoClickEnabled = false
@@ -36,6 +39,13 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var accessibilityGuideRequested = false
     private var guideLastScrollAt = 0L
     private var guidePulseStarted = false
+    private var overlayDismissed = false
+    private var moveModeActive = false
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val moveModeTrigger = Runnable {
+        moveModeActive = true
+        showCloseDropTarget()
+    }
     private val guidePulseCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
             if (!guidePulseStarted) return
@@ -108,6 +118,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
             prefs.unregisterOnSharedPreferenceChangeListener(prefsChangeListener)
         }
         stopGuidePulse()
+        mainHandler.removeCallbacks(moveModeTrigger)
         detachOverlay()
         toneGenerator?.release()
         toneGenerator = null
@@ -206,15 +217,12 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
         val playPause = createActionButton(android.R.drawable.ic_media_pause)
-        val off = createActionButton(android.R.drawable.ic_lock_power_off)
-
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(12, 12, 12, 12)
             setBackgroundColor(0xAA000000.toInt())
             addView(playPause)
-            addView(off)
         }
 
         val params = WindowManager.LayoutParams(
@@ -229,23 +237,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
             y = topOverlayOffsetPx()
         }
 
-        playPause.setOnClickListener {
-            isAutoClickEnabled = !isAutoClickEnabled
-            prefs.edit().putBoolean(KEY_ENABLED, isAutoClickEnabled).apply()
-            updatePlayPauseIcon()
-            updateOverlayVisibility()
-            updateOverlayText()
-        }
-
-        off.setOnClickListener {
-            isAutoClickEnabled = false
-            prefs.edit().putBoolean(KEY_ENABLED, false).apply()
-            updatePlayPauseIcon()
-            updateOverlayVisibility()
-            updateOverlayText()
-        }
-
-        container.setOnTouchListener { _, event ->
+        playPause.setOnTouchListener { _, event ->
             val currentParams = overlayLayoutParams ?: return@setOnTouchListener false
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
@@ -253,19 +245,52 @@ class AutoClickAccessibilityService : AccessibilityService() {
                     dragStartY = currentParams.y
                     touchStartRawX = event.rawX
                     touchStartRawY = event.rawY
+                    moveModeActive = false
+                    mainHandler.postDelayed(moveModeTrigger, LONG_PRESS_TIMEOUT_MS)
                     true
                 }
 
                 MotionEvent.ACTION_MOVE -> {
+                    if (!moveModeActive) {
+                        val movedEnough = kotlin.math.abs(event.rawX - touchStartRawX) > MOVE_THRESHOLD_PX ||
+                            kotlin.math.abs(event.rawY - touchStartRawY) > MOVE_THRESHOLD_PX
+                        if (movedEnough) {
+                            mainHandler.removeCallbacks(moveModeTrigger)
+                        }
+                        return@setOnTouchListener true
+                    }
+
                     val deltaX = (event.rawX - touchStartRawX).toInt()
                     val deltaY = (event.rawY - touchStartRawY).toInt()
                     currentParams.x = dragStartX + deltaX
                     currentParams.y = (dragStartY + deltaY).coerceAtLeast(0)
                     wm.updateViewLayout(container, currentParams)
+                    updateCloseDropTargetState(event.rawX, event.rawY)
                     true
                 }
 
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> false
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    mainHandler.removeCallbacks(moveModeTrigger)
+                    if (moveModeActive) {
+                        if (isInsideCloseDropTarget(event.rawX, event.rawY)) {
+                            dismissOverlayViews()
+                        } else {
+                            hideCloseDropTarget()
+                        }
+                    } else {
+                        val isTap = kotlin.math.abs(event.rawX - touchStartRawX) <= MOVE_THRESHOLD_PX &&
+                            kotlin.math.abs(event.rawY - touchStartRawY) <= MOVE_THRESHOLD_PX
+                        if (isTap) {
+                            isAutoClickEnabled = !isAutoClickEnabled
+                            prefs.edit().putBoolean(KEY_ENABLED, isAutoClickEnabled).apply()
+                            updatePlayPauseIcon()
+                            updateOverlayVisibility()
+                            updateOverlayText()
+                        }
+                    }
+                    moveModeActive = false
+                    true
+                }
 
                 else -> false
             }
@@ -275,7 +300,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
         overlayView = container
         overlayContainer = container
         playPauseButton = playPause
-        offButton = off
         overlayLayoutParams = params
         updateOverlayVisibility()
     }
@@ -291,15 +315,77 @@ class AutoClickAccessibilityService : AccessibilityService() {
             setBackgroundColor(0x00000000)
             setColorFilter(0xFFFFFFFF.toInt())
             scaleType = ImageView.ScaleType.CENTER_INSIDE
-            layoutParams = LinearLayout.LayoutParams(sizePx, sizePx).apply {
-                marginStart = 4
-                marginEnd = 4
-            }
+            layoutParams = LinearLayout.LayoutParams(sizePx, sizePx)
         }
     }
 
+    private fun showCloseDropTarget() {
+        if (overlayDismissed) return
+        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        val dropView = closeDropView ?: ImageView(this).apply {
+            setImageResource(android.R.drawable.ic_menu_close_clear_cancel)
+            setColorFilter(0xFFFFFFFF.toInt())
+            setBackgroundColor(0xCCB00020.toInt())
+            setPadding(20, 20, 20, 20)
+        }.also {
+            closeDropView = it
+        }
+
+        val params = closeDropLayoutParams ?: WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            y = closeDropBottomMarginPx()
+        }.also {
+            closeDropLayoutParams = it
+        }
+
+        if (dropView.parent == null) {
+            wm.addView(dropView, params)
+        } else {
+            wm.updateViewLayout(dropView, params)
+        }
+        dropView.alpha = 0.75f
+        dropView.visibility = View.VISIBLE
+    }
+
+    private fun hideCloseDropTarget() {
+        closeDropView?.visibility = View.GONE
+    }
+
+    private fun updateCloseDropTargetState(rawX: Float, rawY: Float) {
+        closeDropView?.alpha = if (isInsideCloseDropTarget(rawX, rawY)) 1f else 0.75f
+    }
+
+    private fun isInsideCloseDropTarget(rawX: Float, rawY: Float): Boolean {
+        val dropView = closeDropView ?: return false
+        if (dropView.visibility != View.VISIBLE) return false
+        val location = IntArray(2)
+        dropView.getLocationOnScreen(location)
+        val left = location[0]
+        val top = location[1]
+        val right = left + dropView.width
+        val bottom = top + dropView.height
+        return rawX in left.toFloat()..right.toFloat() && rawY in top.toFloat()..bottom.toFloat()
+    }
+
+    private fun dismissOverlayViews() {
+        overlayDismissed = true
+        moveModeActive = false
+        overlayContainer?.visibility = View.GONE
+        hideCloseDropTarget()
+    }
+
     private fun updateOverlayVisibility() {
-        overlayContainer?.visibility = if (isAutoClickEnabled) View.VISIBLE else View.GONE
+        val visible = isAutoClickEnabled && !overlayDismissed
+        overlayContainer?.visibility = if (visible) View.VISIBLE else View.GONE
+        if (!visible) {
+            hideCloseDropTarget()
+        }
     }
 
     private fun updatePlayPauseIcon() {
@@ -314,11 +400,13 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private fun detachOverlay() {
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
         overlayView?.let { wm.removeView(it) }
+        closeDropView?.let { if (it.parent != null) wm.removeView(it) }
         overlayView = null
         overlayContainer = null
         playPauseButton = null
-        offButton = null
+        closeDropView = null
         overlayLayoutParams = null
+        closeDropLayoutParams = null
     }
 
     private fun updateOverlayText(custom: String? = null) {
@@ -331,7 +419,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
             }
         }
         playPauseButton?.contentDescription = statusText
-        offButton?.contentDescription = getString(R.string.overlay_autoclick_off)
     }
 
     private fun moveOverlayNear(@Suppress("UNUSED_PARAMETER") targetBounds: Rect) {
@@ -347,6 +434,12 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private fun topOverlayOffsetPx(): Int = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP,
         OVERLAY_TOP_MARGIN_DP,
+        resources.displayMetrics
+    ).toInt()
+
+    private fun closeDropBottomMarginPx(): Int = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        CLOSE_DROP_BOTTOM_MARGIN_DP,
         resources.displayMetrics
     ).toInt()
 
@@ -402,10 +495,13 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val TONE_VOLUME = 80
         private const val GUIDE_SCROLL_COOLDOWN_MS = 700L
         private const val GUIDE_PULSE_PERIOD_MS = 900L
+        private const val LONG_PRESS_TIMEOUT_MS = 450L
+        private const val MOVE_THRESHOLD_PX = 12
         private const val KEY_GUIDE_REQUESTED = "accessibility_guide_requested"
         private const val KEY_ENABLED = "enabled"
         private const val OVERLAY_TOP_MARGIN_DP = 16f
-        private const val ACTION_BUTTON_SIZE_DP = 36f
+        private const val ACTION_BUTTON_SIZE_DP = 40f
+        private const val CLOSE_DROP_BOTTOM_MARGIN_DP = 28f
         private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
     }
 }
