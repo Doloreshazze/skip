@@ -1,9 +1,7 @@
 package com.playeverywhere999.skip
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.os.Build
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -339,35 +337,11 @@ private fun AutoClickScreen() {
 }
 
 private fun openAccessibilitySettings(context: android.content.Context) {
-    val serviceComponent = android.content.ComponentName(
-        context,
-        AutoClickAccessibilityService::class.java
-    )
-
-    val detailIntent = Intent(ACTION_ACCESSIBILITY_DETAILS_SETTINGS).apply {
-        data = Uri.parse("package:${context.packageName}")
-        putExtra(Intent.EXTRA_COMPONENT_NAME, serviceComponent.flattenToString())
+    val installedServicesIntent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
-
-    val fallbackIntent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
-
-    val intentToLaunch = if (
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
-        detailIntent.resolveActivity(context.packageManager) != null
-    ) {
-        detailIntent
-    } else {
-        fallbackIntent
-    }
-
-    context.startActivity(intentToLaunch)
+    context.startActivity(installedServicesIntent)
 }
-
-private const val ACTION_ACCESSIBILITY_DETAILS_SETTINGS =
-    "android.settings.ACCESSIBILITY_DETAILS_SETTINGS"
 
 @Composable
 private fun GuideStatusRow(active: Boolean) {
