@@ -18,6 +18,7 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 
@@ -321,7 +322,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
             setImageResource(iconResId)
             setBackgroundColor(0xCC111111.toInt())
             setColorFilter(0xFFFFFFFF.toInt())
-            scaleType = ImageButton.ScaleType.CENTER_INSIDE
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
             layoutParams = LinearLayout.LayoutParams(sizePx, sizePx).apply {
                 marginStart = 8
             }
