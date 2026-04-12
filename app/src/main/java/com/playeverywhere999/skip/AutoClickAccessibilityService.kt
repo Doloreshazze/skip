@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.PixelFormat
 import android.graphics.Rect
+import android.graphics.drawable.GradientDrawable
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Handler
@@ -222,11 +223,16 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
         val playPause = createActionButton(android.R.drawable.ic_media_pause)
+        val overlayBackground = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = overlayCornerRadiusPx()
+            setColor(0xAA000000.toInt())
+        }
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(12, 12, 12, 12)
-            setBackgroundColor(0xAA000000.toInt())
+            background = overlayBackground
             addView(playPause)
         }
 
@@ -468,6 +474,12 @@ class AutoClickAccessibilityService : AccessibilityService() {
         resources.displayMetrics
     ).toInt()
 
+    private fun overlayCornerRadiusPx(): Float = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        OVERLAY_CORNER_RADIUS_DP,
+        resources.displayMetrics
+    )
+
     private var dragStartX = 0
     private var dragStartY = 0
     private var touchStartRawX = 0f
@@ -528,6 +540,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val KEY_GUIDE_REQUESTED = "accessibility_guide_requested"
         private const val KEY_ENABLED = "enabled"
         private const val OVERLAY_TOP_MARGIN_DP = 16f
+        private const val OVERLAY_CORNER_RADIUS_DP = 14f
         private const val ACTION_BUTTON_SIZE_DP = 40f
         private const val CLOSE_DROP_BOTTOM_MARGIN_DP = 28f
         private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
