@@ -199,7 +199,25 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     private fun isIgnoredTargetInputNode(node: AccessibilityNodeInfo): Boolean {
         val className = node.className?.toString().orEmpty()
-        return node.isEditable || className == "android.widget.EditText"
+        return node.isEditable ||
+            className == "android.widget.EditText" ||
+            isLauncherAppIconNode(node)
+    }
+
+    private fun isLauncherAppIconNode(node: AccessibilityNodeInfo): Boolean {
+        val packageName = node.packageName?.toString().orEmpty()
+        if (packageName !in LAUNCHER_PACKAGES) return false
+
+        val className = node.className?.toString().orEmpty()
+        val viewIdName = node.viewIdResourceName.orEmpty()
+
+        if (className.contains("BubbleTextView", ignoreCase = true)) return true
+
+        val hasIconLikeViewId = LAUNCHER_ICON_ID_HINTS.any { hint ->
+            viewIdName.contains(hint, ignoreCase = true)
+        }
+
+        return hasIconLikeViewId && (node.isClickable || node.parent?.isClickable == true)
     }
 
     private fun performClick(node: AccessibilityNodeInfo): Boolean {
@@ -544,5 +562,18 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val ACTION_BUTTON_SIZE_DP = 40f
         private const val CLOSE_DROP_BOTTOM_MARGIN_DP = 28f
         private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
+        private val LAUNCHER_PACKAGES = setOf(
+            "com.android.launcher3",
+            "com.google.android.apps.nexuslauncher",
+            "com.miui.home",
+            "com.sec.android.app.launcher",
+            "com.huawei.android.launcher",
+            "com.oppo.launcher",
+            "com.vivo.launcher",
+            "com.transsion.XOSLauncher",
+            "com.transsion.hilauncher",
+            "com.realme.launcher"
+        )
+        private val LAUNCHER_ICON_ID_HINTS = setOf("icon", "title", "bubble", "app")
     }
 }
