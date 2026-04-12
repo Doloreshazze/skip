@@ -201,23 +201,12 @@ class AutoClickAccessibilityService : AccessibilityService() {
         val className = node.className?.toString().orEmpty()
         return node.isEditable ||
             className == "android.widget.EditText" ||
-            isLauncherAppIconNode(node)
+            isLauncherNode(node)
     }
 
-    private fun isLauncherAppIconNode(node: AccessibilityNodeInfo): Boolean {
+    private fun isLauncherNode(node: AccessibilityNodeInfo): Boolean {
         val packageName = node.packageName?.toString().orEmpty()
-        if (packageName !in LAUNCHER_PACKAGES) return false
-
-        val className = node.className?.toString().orEmpty()
-        val viewIdName = node.viewIdResourceName.orEmpty()
-
-        if (className.contains("BubbleTextView", ignoreCase = true)) return true
-
-        val hasIconLikeViewId = LAUNCHER_ICON_ID_HINTS.any { hint ->
-            viewIdName.contains(hint, ignoreCase = true)
-        }
-
-        return hasIconLikeViewId && (node.isClickable || node.parent?.isClickable == true)
+        return packageName in LAUNCHER_PACKAGES
     }
 
     private fun performClick(node: AccessibilityNodeInfo): Boolean {
@@ -574,6 +563,5 @@ class AutoClickAccessibilityService : AccessibilityService() {
             "com.transsion.hilauncher",
             "com.realme.launcher"
         )
-        private val LAUNCHER_ICON_ID_HINTS = setOf("icon", "title", "bubble", "app")
     }
 }
