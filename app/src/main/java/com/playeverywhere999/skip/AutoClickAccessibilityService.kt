@@ -269,7 +269,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
                     true
                 }
 
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                MotionEvent.ACTION_UP -> {
                     mainHandler.removeCallbacks(moveModeTrigger)
                     if (moveModeActive) {
                         if (isInsideCloseDropTarget(event.rawX, event.rawY)) {
@@ -287,6 +287,15 @@ class AutoClickAccessibilityService : AccessibilityService() {
                             updateOverlayVisibility()
                             updateOverlayText()
                         }
+                    }
+                    moveModeActive = false
+                    true
+                }
+
+                MotionEvent.ACTION_CANCEL -> {
+                    mainHandler.removeCallbacks(moveModeTrigger)
+                    if (moveModeActive) {
+                        hideCloseDropTarget()
                     }
                     moveModeActive = false
                     true
@@ -381,7 +390,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun updateOverlayVisibility() {
-        val visible = isAutoClickEnabled && !overlayDismissed
+        val visible = !overlayDismissed
         overlayContainer?.visibility = if (visible) View.VISIBLE else View.GONE
         if (!visible) {
             hideCloseDropTarget()
