@@ -34,6 +34,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var toneGenerator: ToneGenerator? = null
     private lateinit var prefs: SharedPreferences
     private var isAutoClickEnabled = false
+    private var isPaused = false
     private var isSoundEnabled = true
     private var targetText = ""
     private var accessibilityGuideRequested = false
@@ -85,7 +86,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         handleSettingsGuide()
 
-        if (!isAutoClickEnabled) {
+        if (!isAutoClickEnabled || isPaused) {
             updateOverlayText()
             return
         }
@@ -281,8 +282,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
                         val isTap = kotlin.math.abs(event.rawX - touchStartRawX) <= MOVE_THRESHOLD_PX &&
                             kotlin.math.abs(event.rawY - touchStartRawY) <= MOVE_THRESHOLD_PX
                         if (isTap) {
-                            isAutoClickEnabled = !isAutoClickEnabled
-                            prefs.edit().putBoolean(KEY_ENABLED, isAutoClickEnabled).apply()
+                            isPaused = !isPaused
                             updatePlayPauseIcon()
                             updateOverlayVisibility()
                             updateOverlayText()
@@ -390,7 +390,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun updateOverlayVisibility() {
-        val visible = !overlayDismissed
+        val visible = isAutoClickEnabled && !overlayDismissed
         overlayContainer?.visibility = if (visible) View.VISIBLE else View.GONE
         if (!visible) {
             hideCloseDropTarget()
@@ -398,10 +398,10 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun updatePlayPauseIcon() {
-        val iconRes = if (isAutoClickEnabled) {
-            android.R.drawable.ic_media_pause
-        } else {
+        val iconRes = if (isPaused) {
             android.R.drawable.ic_media_play
+        } else {
+            android.R.drawable.ic_media_pause
         }
         playPauseButton?.setImageResource(iconRes)
     }
@@ -421,10 +421,12 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private fun updateOverlayText(custom: String? = null) {
         val statusText = custom ?: run {
             val target = targetText.ifBlank { getString(R.string.overlay_target_not_set) }
-            if (isAutoClickEnabled) {
-                getString(R.string.overlay_autoclick_on, target)
-            } else {
+            if (!isAutoClickEnabled) {
                 getString(R.string.overlay_autoclick_off)
+            } else if (isPaused) {
+                getString(R.string.overlay_autoclick_off)
+            } else {
+                getString(R.string.overlay_autoclick_on, target)
             }
         }
         playPauseButton?.contentDescription = statusText
@@ -477,6 +479,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     private fun reloadPrefs() {
         isAutoClickEnabled = prefs.getBoolean(KEY_ENABLED, false)
+        if (!isAutoClickEnabled) {
+            isPaused = false
+        }
         isSoundEnabled = prefs.getBoolean("sound_enabled", true)
         targetText = prefs.getString("target_text", "").orEmpty().trim()
         accessibilityGuideRequested = prefs.getBoolean(KEY_GUIDE_REQUESTED, false)
