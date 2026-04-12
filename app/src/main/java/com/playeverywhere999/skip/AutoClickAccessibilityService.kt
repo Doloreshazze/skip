@@ -49,6 +49,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         if (key == null) return@OnSharedPreferenceChangeListener
         reloadPrefs()
         updatePlayPauseIcon()
+        updateOverlayVisibility()
         updateOverlayText()
     }
 
@@ -67,6 +68,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, TONE_VOLUME)
         attachOverlay()
         updatePlayPauseIcon()
+        updateOverlayVisibility()
         updateOverlayText()
     }
 
@@ -231,6 +233,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
             isAutoClickEnabled = !isAutoClickEnabled
             prefs.edit().putBoolean(KEY_ENABLED, isAutoClickEnabled).apply()
             updatePlayPauseIcon()
+            updateOverlayVisibility()
             updateOverlayText()
         }
 
@@ -238,6 +241,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
             isAutoClickEnabled = false
             prefs.edit().putBoolean(KEY_ENABLED, false).apply()
             updatePlayPauseIcon()
+            updateOverlayVisibility()
             updateOverlayText()
         }
 
@@ -273,6 +277,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         playPauseButton = playPause
         offButton = off
         overlayLayoutParams = params
+        updateOverlayVisibility()
     }
 
     private fun createActionButton(iconResId: Int): ImageButton {
@@ -291,6 +296,10 @@ class AutoClickAccessibilityService : AccessibilityService() {
                 marginEnd = 4
             }
         }
+    }
+
+    private fun updateOverlayVisibility() {
+        overlayContainer?.visibility = if (isAutoClickEnabled) View.VISIBLE else View.GONE
     }
 
     private fun updatePlayPauseIcon() {
