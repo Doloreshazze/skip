@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Skip</string>
     <string name="accessibility_service_name">Skip Auto Click</string>
-    <string name="accessibility_service_description">Automatically finds a button by text in the UI tree and clicks it.</string>
+    <string name="accessibility_service_description">Finds and taps only user-selected on-screen text. Processing stays on device and can be disabled anytime.</string>
 
     <string name="hero_badge">SKIP • Auto Click</string>
     <string name="hero_title">A minimalist and fast helper for tapping the needed text.</string>
@@ -26,6 +26,11 @@
     <string name="guide_hint_tap_service">Tap “%1$s”.</string>
     <string name="guide_status_active">Guidance active: highlighted item will pulse in Settings.</string>
     <string name="guide_status_idle">Guidance idle: tap the button below to start navigation help.</string>
+    <string name="disclosure_title">Accessibility disclosure</string>
+    <string name="disclosure_message">This app uses Accessibility only for the feature you enable: searching visible UI text and tapping matching buttons. It does not transmit accessibility data from your device. Do not use it for fraud, hidden actions, or to interfere with other apps.</string>
+    <string name="disclosure_confirm_title">I understand and agree</string>
+    <string name="disclosure_confirmed_state">Confirmed</string>
+    <string name="disclosure_unconfirmed_state">Required before enabling automation</string>
 
     <string name="overlay_target_not_set">&lt;not set&gt;</string>
     <string name="overlay_autoclick_on">Auto click: ON (%1$s)</string>

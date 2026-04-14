@@ -124,6 +124,7 @@ private fun AutoClickScreen() {
     var targetText by rememberSaveable { mutableStateOf(AutoClickPrefs.targetText(context)) }
     var enabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isEnabled(context)) }
     var soundEnabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isSoundEnabled(context)) }
+    var disclosureAccepted by rememberSaveable { mutableStateOf(AutoClickPrefs.isDisclosureAccepted(context)) }
     var accessibilityEnabled by rememberSaveable { mutableStateOf(AccessibilityUtils.isServiceEnabled(context)) }
     var guideRequested by rememberSaveable { mutableStateOf(AutoClickPrefs.isAccessibilityGuideRequested(context)) }
     var screenLocked by remember { mutableStateOf(isScreenLocked(context)) }
@@ -255,7 +256,12 @@ private fun AutoClickScreen() {
                             title = stringResource(R.string.toggle_autoclick_title),
                             subtitle = if (enabled) stringResource(R.string.state_active) else stringResource(R.string.state_disabled),
                             checked = enabled,
+                            enabled = disclosureAccepted,
                             onCheckedChange = {
+                                if (!disclosureAccepted) {
+                                    permissionAttentionTrigger++
+                                    return@SettingToggleRow
+                                }
                                 val canEnable = !it || accessibilityEnabled
                                 enabled = canEnable && it
                                 AutoClickPrefs.setEnabled(context, enabled)
@@ -269,9 +275,52 @@ private fun AutoClickScreen() {
                             title = stringResource(R.string.toggle_sound_title),
                             subtitle = if (soundEnabled) stringResource(R.string.state_sound_on) else stringResource(R.string.state_sound_off),
                             checked = soundEnabled,
+                            enabled = disclosureAccepted,
                             onCheckedChange = {
+                                if (!disclosureAccepted) return@SettingToggleRow
                                 soundEnabled = it
                                 AutoClickPrefs.setSoundEnabled(context, it)
+                            }
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.disclosure_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = stringResource(R.string.disclosure_message),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        SettingToggleRow(
+                            title = stringResource(R.string.disclosure_confirm_title),
+                            subtitle = if (disclosureAccepted) {
+                                stringResource(R.string.disclosure_confirmed_state)
+                            } else {
+                                stringResource(R.string.disclosure_unconfirmed_state)
+                            },
+                            checked = disclosureAccepted,
+                            onCheckedChange = {
+                                disclosureAccepted = it
+                                AutoClickPrefs.setDisclosureAccepted(context, it)
+                                if (!it) {
+                                    enabled = false
+                                    AutoClickPrefs.setEnabled(context, false)
+                                }
                             }
                         )
                     }
@@ -326,11 +375,16 @@ private fun AutoClickScreen() {
                         if (!screenLocked) {
                             Button(
                                 onClick = {
+                                    if (!disclosureAccepted) {
+                                        permissionAttentionTrigger++
+                                        return@Button
+                                    }
                                     AutoClickPrefs.setAccessibilityGuideRequested(context, true)
                                     guideRequested = true
                                     openAccessibilitySettings(context)
                                 },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = disclosureAccepted
                             ) {
                                 Text(stringResource(R.string.open_accessibility_settings), textAlign = TextAlign.Center)
                             }
@@ -419,6 +473,7 @@ private fun SettingToggleRow(
     title: String,
     subtitle: String,
     checked: Boolean,
+    enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Row(
@@ -434,6 +489,10 @@ private fun SettingToggleRow(
             )
         }
         Spacer(modifier = Modifier.width(12.dp))
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled
+        )
     }
 }
