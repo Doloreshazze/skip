@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -373,8 +374,11 @@ private fun openAccessibilitySettings(context: android.content.Context) {
 
 private fun isScreenLocked(context: android.content.Context): Boolean {
     val keyguardManager = context.getSystemService(KeyguardManager::class.java)
-    if (keyguardManager == null) return false
-    return keyguardManager.isKeyguardLocked || keyguardManager.isDeviceLocked
+    val powerManager = context.getSystemService(PowerManager::class.java)
+    val screenOff = powerManager?.isInteractive == false
+    val keyguardLocked = keyguardManager?.isKeyguardLocked == true
+    val deviceLocked = keyguardManager?.isDeviceLocked == true
+    return screenOff || keyguardLocked || deviceLocked
 }
 
 private const val ACTION_ACCESSIBILITY_DETAILS_SETTINGS =
