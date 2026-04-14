@@ -268,8 +268,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
             y = topOverlayOffsetPx()
         }
 
-        container.setOnTouchListener { _, event ->
-            val currentParams = overlayLayoutParams ?: return@setOnTouchListener false
+        val overlayTouchListener = View.OnTouchListener overlayTouchListener@{ _, event ->
+            val currentParams = overlayLayoutParams ?: return@overlayTouchListener false
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     dragStartX = currentParams.x
@@ -288,7 +288,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
                         if (movedEnough) {
                             mainHandler.removeCallbacks(moveModeTrigger)
                         }
-                        return@setOnTouchListener true
+                        return@overlayTouchListener true
                     }
 
                     val deltaX = (event.rawX - touchStartRawX).toInt()
@@ -334,6 +334,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
                 else -> false
             }
         }
+        container.setOnTouchListener(overlayTouchListener)
+        playPause.setOnTouchListener(overlayTouchListener)
 
         wm.addView(container, params)
         overlayView = container
@@ -354,8 +356,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
             setBackgroundColor(0x00000000)
             setColorFilter(0xFFFFFFFF.toInt())
             scaleType = ImageView.ScaleType.CENTER_INSIDE
-            isClickable = false
-            isFocusable = false
             layoutParams = LinearLayout.LayoutParams(sizePx, sizePx)
         }
     }
