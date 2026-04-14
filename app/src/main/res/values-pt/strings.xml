@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Skip</string>
     <string name="accessibility_service_name">Skip Auto Clique</string>
-    <string name="accessibility_service_description">Encontra automaticamente um botão pelo texto na árvore de interface e clica nele.</string>
+    <string name="accessibility_service_description">Encontra e toca apenas no texto em tela selecionado pelo usuário. O processamento fica no dispositivo e pode ser desativado a qualquer momento.</string>
 
     <string name="hero_badge">SKIP • Auto Clique</string>
     <string name="hero_title">Um assistente minimalista e rápido para clicar no texto necessário.</string>
@@ -22,6 +22,15 @@
     <string name="permission_ready_message">A permissão está ativa. Você pode iniciar o auto clique.</string>
     <string name="permission_needed_message">Abra as configurações do sistema e habilite o serviço SKIP.</string>
     <string name="open_accessibility_settings">Abrir configurações de Acessibilidade</string>
+    <string name="guide_hint_searching">Buscando o item de menu necessário…</string>
+    <string name="guide_hint_tap_service">Toque em “%1$s”.</string>
+    <string name="guide_status_active">Guia ativa: o item destacado pulsará em Configurações.</string>
+    <string name="guide_status_idle">Guia inativa: toque no botão abaixo para iniciar a ajuda de navegação.</string>
+    <string name="disclosure_title">Divulgação de Acessibilidade</string>
+    <string name="disclosure_message">Este app usa Acessibilidade apenas para o recurso que você habilitar: procurar texto visível na interface e tocar em botões correspondentes. Ele não transmite dados de acessibilidade do seu dispositivo. Não use para fraude, ações ocultas ou para interferir em outros apps.</string>
+    <string name="disclosure_confirm_title">Entendo e concordo</string>
+    <string name="disclosure_confirmed_state">Confirmado</string>
+    <string name="disclosure_unconfirmed_state">Obrigatório antes de habilitar a automação</string>
 
     <string name="overlay_target_not_set">&lt;não definido&gt;</string>
     <string name="overlay_autoclick_on">Auto clique: ON (%1$s)</string>

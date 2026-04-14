@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">Skip</string>
+    <string name="accessibility_service_name">Skip 自動タップ</string>
+    <string name="accessibility_service_description">ユーザーが選んだ画面上のテキストのみを探してタップします。処理は端末内で行われ、いつでも無効にできます。</string>
+
+    <string name="hero_badge">SKIP • 自動タップ</string>
+    <string name="hero_title">必要なテキストをすばやくタップするための、ミニマルで高速なヘルパーです。</string>
+    <string name="hero_steps">1) ボタンの正確な文字列を入力。\n2) 必要なトグルを有効化。\n3) アクセシビリティでサービスを許可。</string>
+
+    <string name="section_target_title">画面上で探す内容</string>
+    <string name="target_text_label">ボタンの文字列</string>
+
+    <string name="toggle_autoclick_title">自動タップ</string>
+    <string name="toggle_sound_title">サウンド通知</string>
+    <string name="state_active">有効</string>
+    <string name="state_disabled">無効</string>
+    <string name="state_sound_on">オン</string>
+    <string name="state_sound_off">オフ</string>
+
+    <string name="permission_ready_title">サービス準備完了</string>
+    <string name="permission_needed_title">アクセシビリティを有効化</string>
+    <string name="permission_ready_message">権限は有効です。自動タップを開始できます。</string>
+    <string name="permission_needed_message">システム設定を開き、SKIP サービスを有効にしてください。</string>
+    <string name="open_accessibility_settings">アクセシビリティ設定を開く</string>
+    <string name="guide_hint_searching">必要なメニュー項目を検索中…</string>
+    <string name="guide_hint_tap_service">「%1$s」をタップ。</string>
+    <string name="guide_status_active">ガイダンス有効: 設定内の強調項目が点滅します。</string>
+    <string name="guide_status_idle">ガイダンス停止中: 下のボタンをタップして案内を開始します。</string>
+    <string name="disclosure_title">アクセシビリティに関する開示</string>
+    <string name="disclosure_message">このアプリは、有効化した機能（表示中のUIテキスト検索と一致ボタンのタップ）のためにのみアクセシビリティを使用します。端末のアクセシビリティデータを外部送信しません。詐欺、隠れた操作、他アプリへの干渉には使用しないでください。</string>
+    <string name="disclosure_confirm_title">内容を理解し同意します</string>
+    <string name="disclosure_confirmed_state">確認済み</string>
+    <string name="disclosure_unconfirmed_state">自動化を有効にする前に必須</string>
+
+    <string name="overlay_target_not_set">&lt;未設定&gt;</string>
+    <string name="overlay_autoclick_on">自動タップ: ON (%1$s)</string>
+    <string name="overlay_autoclick_off">自動タップ: OFF</string>
+    <string name="overlay_clicked">タップ済み: %1$s</string>
+</resources>

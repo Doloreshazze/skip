@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Skip</string>
     <string name="accessibility_service_name">Skip ऑटो क्लिक</string>
-    <string name="accessibility_service_description">UI ट्री में टेक्स्ट के आधार पर बटन को अपने आप ढूँढकर क्लिक करता है।</string>
+    <string name="accessibility_service_description">यह केवल उपयोगकर्ता द्वारा चुने गए ऑन-स्क्रीन टेक्स्ट को ढूंढकर क्लिक करता है। प्रोसेसिंग डिवाइस पर ही रहती है और कभी भी बंद की जा सकती है।</string>
 
     <string name="hero_badge">SKIP • ऑटो क्लिक</string>
     <string name="hero_title">ज़रूरी टेक्स्ट पर क्लिक करने के लिए एक तेज़ और सरल सहायक।</string>
@@ -22,6 +22,15 @@
     <string name="permission_ready_message">अनुमति सक्रिय है। आप ऑटो क्लिक शुरू कर सकते हैं।</string>
     <string name="permission_needed_message">सिस्टम सेटिंग्स खोलें और SKIP सेवा सक्षम करें।</string>
     <string name="open_accessibility_settings">Accessibility सेटिंग्स खोलें</string>
+    <string name="guide_hint_searching">ज़रूरी मेनू आइटम खोजा जा रहा है…</string>
+    <string name="guide_hint_tap_service">"%1$s" पर टैप करें।</string>
+    <string name="guide_status_active">मार्गदर्शन सक्रिय: Settings में हाइलाइट किया गया आइटम धड़कता रहेगा।</string>
+    <string name="guide_status_idle">मार्गदर्शन निष्क्रिय: नेविगेशन सहायता शुरू करने के लिए नीचे वाला बटन टैप करें।</string>
+    <string name="disclosure_title">Accessibility प्रकटीकरण</string>
+    <string name="disclosure_message">यह ऐप Accessibility का उपयोग केवल उसी सुविधा के लिए करता है जिसे आप सक्षम करते हैं: दिख रहे UI टेक्स्ट को खोजने और मिलते-जुलते बटन टैप करने के लिए। यह आपके डिवाइस से Accessibility डेटा ट्रांसमिट नहीं करता। इसे धोखाधड़ी, छिपी कार्रवाइयों या अन्य ऐप्स में हस्तक्षेप के लिए उपयोग न करें।</string>
+    <string name="disclosure_confirm_title">मैं समझता/समझती हूँ और सहमत हूँ</string>
+    <string name="disclosure_confirmed_state">पुष्ट</string>
+    <string name="disclosure_unconfirmed_state">ऑटोमेशन सक्षम करने से पहले आवश्यक</string>
 
     <string name="overlay_target_not_set">&lt;सेट नहीं&gt;</string>
     <string name="overlay_autoclick_on">ऑटो क्लिक: ON (%1$s)</string>

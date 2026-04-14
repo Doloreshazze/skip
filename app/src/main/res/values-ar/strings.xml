@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">Skip</string>
+    <string name="accessibility_service_name">Skip النقر التلقائي</string>
+    <string name="accessibility_service_description">يبحث وينقر فقط على النص الذي يحدده المستخدم على الشاشة. تتم المعالجة على الجهاز ويمكن إيقافها في أي وقت.</string>
+
+    <string name="hero_badge">SKIP • النقر التلقائي</string>
+    <string name="hero_title">مساعد بسيط وسريع للنقر على النص المطلوب.</string>
+    <string name="hero_steps">1) أدخل نص الزر بدقة.\n2) فعّل المفاتيح المطلوبة.\n3) اسمح بالخدمة ضمن إمكانية الوصول.</string>
+
+    <string name="section_target_title">ما الذي يجب البحث عنه على الشاشة</string>
+    <string name="target_text_label">نص الزر</string>
+
+    <string name="toggle_autoclick_title">النقر التلقائي</string>
+    <string name="toggle_sound_title">إشارة صوتية</string>
+    <string name="state_active">نشط</string>
+    <string name="state_disabled">معطل</string>
+    <string name="state_sound_on">تشغيل</string>
+    <string name="state_sound_off">إيقاف</string>
+
+    <string name="permission_ready_title">الخدمة جاهزة</string>
+    <string name="permission_needed_title">فعّل إمكانية الوصول</string>
+    <string name="permission_ready_message">الإذن مفعّل. يمكنك بدء النقر التلقائي.</string>
+    <string name="permission_needed_message">افتح إعدادات النظام وفعّل خدمة SKIP.</string>
+    <string name="open_accessibility_settings">فتح إعدادات إمكانية الوصول</string>
+    <string name="guide_hint_searching">جارٍ البحث عن عنصر القائمة المطلوب…</string>
+    <string name="guide_hint_tap_service">اضغط على «%1$s».</string>
+    <string name="guide_status_active">الإرشاد نشط: سيتوهج العنصر المميز في الإعدادات.</string>
+    <string name="guide_status_idle">الإرشاد متوقف: اضغط الزر أدناه لبدء مساعدة التنقل.</string>
+    <string name="disclosure_title">إفصاح إمكانية الوصول</string>
+    <string name="disclosure_message">يستخدم هذا التطبيق إمكانية الوصول فقط للميزة التي تفعّلها: البحث عن نص واجهة المستخدم المرئي والنقر على الأزرار المطابقة. لا يتم إرسال بيانات إمكانية الوصول من جهازك. لا تستخدمه للاحتيال أو الإجراءات المخفية أو للتدخل في تطبيقات أخرى.</string>
+    <string name="disclosure_confirm_title">أفهم وأوافق</string>
+    <string name="disclosure_confirmed_state">تم التأكيد</string>
+    <string name="disclosure_unconfirmed_state">مطلوب قبل تفعيل الأتمتة</string>
+
+    <string name="overlay_target_not_set">&lt;غير محدد&gt;</string>
+    <string name="overlay_autoclick_on">النقر التلقائي: ON (%1$s)</string>
+    <string name="overlay_autoclick_off">النقر التلقائي: OFF</string>
+    <string name="overlay_clicked">تم النقر: %1$s</string>
+</resources>
