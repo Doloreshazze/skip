@@ -268,7 +268,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
             y = topOverlayOffsetPx()
         }
 
-        playPause.setOnTouchListener { _, event ->
+        container.setOnTouchListener { _, event ->
             val currentParams = overlayLayoutParams ?: return@setOnTouchListener false
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
@@ -354,6 +354,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
             setBackgroundColor(0x00000000)
             setColorFilter(0xFFFFFFFF.toInt())
             scaleType = ImageView.ScaleType.CENTER_INSIDE
+            isClickable = false
+            isFocusable = false
             layoutParams = LinearLayout.LayoutParams(sizePx, sizePx)
         }
     }
@@ -587,7 +589,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val KEY_ENABLED = "enabled"
         private const val OVERLAY_TOP_MARGIN_DP = 16f
         private const val OVERLAY_CORNER_RADIUS_DP = 14f
-        private const val ACTION_BUTTON_SIZE_DP = 40f
+        private const val ACTION_BUTTON_SIZE_DP = 48f
         private const val CLOSE_DROP_BOTTOM_MARGIN_DP = 28f
         private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
         private val LAUNCHER_PACKAGES = setOf(
