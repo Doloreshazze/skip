@@ -268,8 +268,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
             y = topOverlayOffsetPx()
         }
 
-        playPause.setOnTouchListener { _, event ->
-            val currentParams = overlayLayoutParams ?: return@setOnTouchListener false
+        val overlayTouchListener = View.OnTouchListener overlayTouchListener@{ _, event ->
+            val currentParams = overlayLayoutParams ?: return@overlayTouchListener false
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     dragStartX = currentParams.x
@@ -288,7 +288,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
                         if (movedEnough) {
                             mainHandler.removeCallbacks(moveModeTrigger)
                         }
-                        return@setOnTouchListener true
+                        return@overlayTouchListener true
                     }
 
                     val deltaX = (event.rawX - touchStartRawX).toInt()
@@ -334,6 +334,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
                 else -> false
             }
         }
+        container.setOnTouchListener(overlayTouchListener)
+        playPause.setOnTouchListener(overlayTouchListener)
 
         wm.addView(container, params)
         overlayView = container
@@ -587,7 +589,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val KEY_ENABLED = "enabled"
         private const val OVERLAY_TOP_MARGIN_DP = 16f
         private const val OVERLAY_CORNER_RADIUS_DP = 14f
-        private const val ACTION_BUTTON_SIZE_DP = 40f
+        private const val ACTION_BUTTON_SIZE_DP = 48f
         private const val CLOSE_DROP_BOTTOM_MARGIN_DP = 28f
         private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
         private val LAUNCHER_PACKAGES = setOf(
