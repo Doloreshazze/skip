@@ -286,10 +286,24 @@ private fun AutoClickScreen() {
                 }
 
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            width = 1.5.dp,
+                            color = if (disclosureAccepted) {
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)
+                            } else {
+                                MaterialTheme.colorScheme.error.copy(alpha = 0.45f)
+                            },
+                            shape = RoundedCornerShape(20.dp)
+                        ),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
+                        containerColor = if (disclosureAccepted) {
+                            MaterialTheme.colorScheme.surface
+                        } else {
+                            MaterialTheme.colorScheme.error.copy(alpha = 0.08f)
+                        }
                     )
                 ) {
                     Column(
@@ -299,7 +313,12 @@ private fun AutoClickScreen() {
                         Text(
                             text = stringResource(R.string.disclosure_title),
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
+                            color = if (disclosureAccepted) {
+                                MaterialTheme.colorScheme.onSurface
+                            } else {
+                                MaterialTheme.colorScheme.error
+                            },
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = stringResource(R.string.disclosure_message),
