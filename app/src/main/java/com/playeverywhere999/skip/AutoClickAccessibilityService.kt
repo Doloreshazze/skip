@@ -2,7 +2,11 @@ package com.playeverywhere999.skip
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.app.KeyguardManager
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.graphics.PixelFormat
 import android.graphics.Rect
@@ -11,6 +15,7 @@ import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.os.SystemClock
 import android.util.TypedValue
 import android.view.Choreographer
@@ -68,6 +73,12 @@ class AutoClickAccessibilityService : AccessibilityService() {
         updateOverlayVisibility()
         updateOverlayText()
     }
+    private val screenStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            updateOverlayVisibility()
+        }
+    }
+    private var isScreenStateReceiverRegistered = false
 
     override fun onCreate() {
         super.onCreate()
@@ -81,6 +92,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         serviceInfo = serviceInfo.apply {
             flags = flags or AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
         }
+        registerScreenStateReceiverIfNeeded()
         toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, TONE_VOLUME)
         attachOverlay()
         updatePlayPauseIcon()
@@ -120,6 +132,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        unregisterScreenStateReceiverIfNeeded()
         if (::prefs.isInitialized) {
             prefs.unregisterOnSharedPreferenceChangeListener(prefsChangeListener)
         }
@@ -407,11 +420,37 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun updateOverlayVisibility() {
-        val visible = isAutoClickEnabled && !overlayDismissed
+        val visible = isAutoClickEnabled && !overlayDismissed && !isScreenLocked()
         overlayContainer?.visibility = if (visible) View.VISIBLE else View.GONE
         if (!visible) {
             hideCloseDropTarget()
         }
+    }
+
+    private fun isScreenLocked(): Boolean {
+        val keyguardManager = getSystemService(KeyguardManager::class.java)
+        val powerManager = getSystemService(PowerManager::class.java)
+        val screenOff = powerManager?.isInteractive == false
+        val keyguardLocked = keyguardManager?.isKeyguardLocked == true
+        val deviceLocked = keyguardManager?.isDeviceLocked == true
+        return screenOff || keyguardLocked || deviceLocked
+    }
+
+    private fun registerScreenStateReceiverIfNeeded() {
+        if (isScreenStateReceiverRegistered) return
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_USER_PRESENT)
+        }
+        registerReceiver(screenStateReceiver, filter)
+        isScreenStateReceiverRegistered = true
+    }
+
+    private fun unregisterScreenStateReceiverIfNeeded() {
+        if (!isScreenStateReceiverRegistered) return
+        unregisterReceiver(screenStateReceiver)
+        isScreenStateReceiverRegistered = false
     }
 
     private fun updatePlayPauseIcon() {
