@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">Skip</string>
+    <string name="accessibility_service_name">Skip অটো ক্লিক</string>
+    <string name="accessibility_service_description">ব্যবহারকারী যে অন-স্ক্রিন টেক্সট নির্বাচন করেন, অ্যাপটি শুধুমাত্র সেটিই খুঁজে ট্যাপ করে। সব প্রসেসিং ডিভাইসেই থাকে এবং যেকোনো সময় বন্ধ করা যায়।</string>
+
+    <string name="hero_badge">SKIP • অটো ক্লিক</string>
+    <string name="hero_title">প্রয়োজনীয় টেক্সটে ট্যাপ করার জন্য একটি দ্রুত ও মিনিমাল সহায়ক।</string>
+    <string name="hero_steps">1) বাটনের সঠিক টেক্সট লিখুন।\n2) প্রয়োজনীয় টগল চালু করুন।\n3) Accessibility-তে সার্ভিসটি অনুমতি দিন।</string>
+
+    <string name="section_target_title">স্ক্রিনে কী খুঁজতে হবে</string>
+    <string name="target_text_label">বাটনের টেক্সট</string>
+
+    <string name="toggle_autoclick_title">অটো ক্লিক</string>
+    <string name="toggle_sound_title">সাউন্ড সংকেত</string>
+    <string name="state_active">সক্রিয়</string>
+    <string name="state_disabled">বন্ধ</string>
+    <string name="state_sound_on">চালু</string>
+    <string name="state_sound_off">বন্ধ</string>
+
+    <string name="permission_ready_title">সার্ভিস প্রস্তুত</string>
+    <string name="permission_needed_title">Accessibility চালু করুন</string>
+    <string name="permission_ready_message">অনুমতি সক্রিয় আছে। আপনি অটো ক্লিক শুরু করতে পারেন।</string>
+    <string name="permission_needed_message">সিস্টেম সেটিংস খুলে SKIP সার্ভিসটি সক্রিয় করুন।</string>
+    <string name="open_accessibility_settings">Accessibility সেটিংস খুলুন</string>
+    <string name="guide_hint_searching">প্রয়োজনীয় মেনু আইটেম খোঁজা হচ্ছে…</string>
+    <string name="guide_hint_tap_service">“%1$s” ট্যাপ করুন।</string>
+    <string name="guide_status_active">গাইডেন্স সক্রিয়: Settings-এ হাইলাইট করা আইটেমটি পালস করবে।</string>
+    <string name="guide_status_idle">গাইডেন্স নিষ্ক্রিয়: নেভিগেশন সহায়তা শুরু করতে নিচের বোতামটি ট্যাপ করুন।</string>
+    <string name="disclosure_title">Accessibility প্রকাশনা</string>
+    <string name="disclosure_message">এই অ্যাপটি Accessibility শুধুমাত্র আপনার চালু করা ফিচারের জন্য ব্যবহার করে: দৃশ্যমান UI টেক্সট খোঁজা এবং মিল থাকা বোতাম ট্যাপ করা। আপনার ডিভাইস থেকে Accessibility ডেটা পাঠানো হয় না। প্রতারণা, গোপন কাজ বা অন্য অ্যাপে হস্তক্ষেপের জন্য এটি ব্যবহার করবেন না।</string>
+    <string name="disclosure_confirm_title">আমি বুঝেছি এবং সম্মত</string>
+    <string name="disclosure_confirmed_state">নিশ্চিত</string>
+    <string name="disclosure_unconfirmed_state">অটোমেশন চালুর আগে আবশ্যক</string>
+
+    <string name="overlay_target_not_set">&lt;সেট করা নেই&gt;</string>
+    <string name="overlay_autoclick_on">অটো ক্লিক: ON (%1$s)</string>
+    <string name="overlay_autoclick_off">অটো ক্লিক: OFF</string>
+    <string name="overlay_clicked">ক্লিক হয়েছে: %1$s</string>
+</resources>

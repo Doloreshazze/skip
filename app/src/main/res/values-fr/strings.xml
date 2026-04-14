@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">Skip</string>
+    <string name="accessibility_service_name">Skip Auto Clic</string>
+    <string name="accessibility_service_description">Recherche et appuie uniquement sur le texte à l’écran choisi par l’utilisateur. Le traitement reste sur l’appareil et peut être désactivé à tout moment.</string>
+
+    <string name="hero_badge">SKIP • Auto Clic</string>
+    <string name="hero_title">Un assistant minimaliste et rapide pour appuyer sur le texte voulu.</string>
+    <string name="hero_steps">1) Saisissez le texte exact du bouton.\n2) Activez les options nécessaires.\n3) Autorisez le service dans Accessibilité.</string>
+
+    <string name="section_target_title">Que chercher à l’écran</string>
+    <string name="target_text_label">Texte du bouton</string>
+
+    <string name="toggle_autoclick_title">Auto clic</string>
+    <string name="toggle_sound_title">Signal sonore</string>
+    <string name="state_active">Actif</string>
+    <string name="state_disabled">Désactivé</string>
+    <string name="state_sound_on">Activé</string>
+    <string name="state_sound_off">Désactivé</string>
+
+    <string name="permission_ready_title">Service prêt</string>
+    <string name="permission_needed_title">Activez l’accessibilité</string>
+    <string name="permission_ready_message">L’autorisation est active. Vous pouvez lancer l’auto clic.</string>
+    <string name="permission_needed_message">Ouvrez les paramètres système et activez le service SKIP.</string>
+    <string name="open_accessibility_settings">Ouvrir les paramètres d’accessibilité</string>
+    <string name="guide_hint_searching">Recherche de l’élément de menu requis…</string>
+    <string name="guide_hint_tap_service">Appuyez sur « %1$s ».</string>
+    <string name="guide_status_active">Guidage actif : l’élément surligné pulsera dans Réglages.</string>
+    <string name="guide_status_idle">Guidage inactif : appuyez sur le bouton ci-dessous pour démarrer l’aide à la navigation.</string>
+    <string name="disclosure_title">Divulgation Accessibilité</string>
+    <string name="disclosure_message">Cette application utilise l’accessibilité uniquement pour la fonction que vous activez : rechercher le texte visible de l’interface et appuyer sur les boutons correspondants. Elle ne transmet pas les données d’accessibilité de votre appareil. Ne l’utilisez pas pour la fraude, des actions cachées ou pour perturber d’autres applications.</string>
+    <string name="disclosure_confirm_title">Je comprends et j’accepte</string>
+    <string name="disclosure_confirmed_state">Confirmé</string>
+    <string name="disclosure_unconfirmed_state">Obligatoire avant d’activer l’automatisation</string>
+
+    <string name="overlay_target_not_set">&lt;non défini&gt;</string>
+    <string name="overlay_autoclick_on">Auto clic : ON (%1$s)</string>
+    <string name="overlay_autoclick_off">Auto clic : OFF</string>
+    <string name="overlay_clicked">Cliqué : %1$s</string>
+</resources>
