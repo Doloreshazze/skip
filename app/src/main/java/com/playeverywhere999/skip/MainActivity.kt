@@ -373,7 +373,8 @@ private fun openAccessibilitySettings(context: android.content.Context) {
 
 private fun isScreenLocked(context: android.content.Context): Boolean {
     val keyguardManager = context.getSystemService(KeyguardManager::class.java)
-    return keyguardManager?.isDeviceLocked == true
+    if (keyguardManager == null) return false
+    return keyguardManager.isKeyguardLocked || keyguardManager.isDeviceLocked
 }
 
 private const val ACTION_ACCESSIBILITY_DETAILS_SETTINGS =
