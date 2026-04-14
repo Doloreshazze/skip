@@ -1,9 +1,11 @@
 package com.playeverywhere999.skip
 
+import android.app.KeyguardManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -124,6 +126,7 @@ private fun AutoClickScreen() {
     var soundEnabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isSoundEnabled(context)) }
     var accessibilityEnabled by rememberSaveable { mutableStateOf(AccessibilityUtils.isServiceEnabled(context)) }
     var guideRequested by rememberSaveable { mutableStateOf(AutoClickPrefs.isAccessibilityGuideRequested(context)) }
+    var screenLocked by remember { mutableStateOf(isScreenLocked(context)) }
     var permissionAttentionTrigger by remember { mutableIntStateOf(0) }
     val permissionCardOffset = remember { Animatable(0f) }
 
@@ -132,6 +135,7 @@ private fun AutoClickScreen() {
             if (event == Lifecycle.Event.ON_RESUME) {
                 accessibilityEnabled = AccessibilityUtils.isServiceEnabled(context)
                 guideRequested = AutoClickPrefs.isAccessibilityGuideRequested(context)
+                screenLocked = isScreenLocked(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -319,15 +323,17 @@ private fun AutoClickScreen() {
                         GuideStatusRow(
                             active = !accessibilityEnabled && guideRequested
                         )
-                        Button(
-                            onClick = {
-                                AutoClickPrefs.setAccessibilityGuideRequested(context, true)
-                                guideRequested = true
-                                openAccessibilitySettings(context)
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(stringResource(R.string.open_accessibility_settings), textAlign = TextAlign.Center)
+                        if (!screenLocked) {
+                            Button(
+                                onClick = {
+                                    AutoClickPrefs.setAccessibilityGuideRequested(context, true)
+                                    guideRequested = true
+                                    openAccessibilitySettings(context)
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(stringResource(R.string.open_accessibility_settings), textAlign = TextAlign.Center)
+                            }
                         }
                     }
                 }
@@ -364,6 +370,15 @@ private fun openAccessibilitySettings(context: android.content.Context) {
     }
 
     context.startActivity(intentToLaunch)
+}
+
+private fun isScreenLocked(context: android.content.Context): Boolean {
+    val keyguardManager = context.getSystemService(KeyguardManager::class.java)
+    val powerManager = context.getSystemService(PowerManager::class.java)
+    val screenOff = powerManager?.isInteractive == false
+    val keyguardLocked = keyguardManager?.isKeyguardLocked == true
+    val deviceLocked = keyguardManager?.isDeviceLocked == true
+    return screenOff || keyguardLocked || deviceLocked
 }
 
 private const val ACTION_ACCESSIBILITY_DETAILS_SETTINGS =
