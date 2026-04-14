@@ -268,7 +268,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
             y = topOverlayOffsetPx()
         }
 
-        playPause.setOnTouchListener { _, event ->
+        container.setOnTouchListener { _, event ->
             val currentParams = overlayLayoutParams ?: return@setOnTouchListener false
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
