@@ -827,7 +827,13 @@ private fun FakeSettingsSlide(
                                 page == 0 && row == 2 -> "Установленные службы"
                                 page == 1 && row == 0 -> appName
                                 page == 2 && row == 1 -> "Выключено     ○○"
-                                else -> "Пункт меню ${row + 1}"
+                                page == 0 && row == 0 -> "Нарушение координации и взаимодействие"
+                                page == 0 && row == 1 -> "Дополнительные параметры"
+                                page == 1 && row == 1 -> "Другое ваше приложение"
+                                page == 1 && row == 2 -> "Ещё одно приложение"
+                                page == 2 && row == 0 -> "Включено"
+                                page == 2 && row == 2 -> "Другой сервис"
+                                else -> "Раздел настроек"
                             },
                             style = MaterialTheme.typography.titleMedium,
                             color = if (isHighlighted) Color(0xFF183A66) else Color(0xFF434343)
