@@ -65,6 +65,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
@@ -449,6 +450,8 @@ private fun PermissionInstructionFirstPage(
     onCancel: () -> Unit,
     onAllowClick: () -> Unit
 ) {
+    val uriHandler = LocalUriHandler.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -524,7 +527,12 @@ private fun PermissionInstructionFirstPage(
                         text = stringResource(R.string.permission_intro_privacy_policy_link),
                         style = MaterialTheme.typography.titleLarge,
                         color = Color(0xFF2AA6FF),
-                        textDecoration = TextDecoration.Underline
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable {
+                            uriHandler.openUri(
+                                stringResource(R.string.permission_intro_privacy_policy_url)
+                            )
+                        }
                     )
                 }
             }

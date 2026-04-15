@@ -41,6 +41,7 @@
     <string name="permission_intro_privacy_body">NO. We do not collect your personal data using this permission.</string>
     <string name="permission_intro_privacy_policy_prefix">Our app fully complies with the disclosure and data transfer requirements in</string>
     <string name="permission_intro_privacy_policy_link">Google Play User Data Policy.</string>
+    <string name="permission_intro_privacy_policy_url">https://support.google.com/googleplay/android-developer/answer/10144311</string>
     <string name="permission_intro_cancel">Cancel</string>
     <string name="permission_intro_allow">Allow</string>
 
