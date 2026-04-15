@@ -38,6 +38,9 @@
     <string name="permission_intro_how_title">How to enable?</string>
     <string name="permission_intro_how_text">Tap “Allow”, find this app in the installed services list, and turn the permission on.</string>
     <string name="permission_intro_privacy_title">Do we collect personal data?</string>
+    <string name="permission_intro_privacy_body">NO. We do not collect your personal data using this permission.</string>
+    <string name="permission_intro_privacy_policy_prefix">Our app fully complies with the disclosure and data transfer requirements in</string>
+    <string name="permission_intro_privacy_policy_link">Google Play User Data Policy.</string>
     <string name="permission_intro_cancel">Cancel</string>
     <string name="permission_intro_allow">Allow</string>
 

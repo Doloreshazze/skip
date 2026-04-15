@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.ViewCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -65,6 +66,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
@@ -131,6 +133,7 @@ private fun AutoClickScreen() {
     var guideRequested by rememberSaveable { mutableStateOf(AutoClickPrefs.isAccessibilityGuideRequested(context)) }
     var screenLocked by remember { mutableStateOf(isScreenLocked(context)) }
     var permissionAttentionTrigger by remember { mutableIntStateOf(0) }
+    var privacyExpanded by rememberSaveable { mutableStateOf(false) }
     val permissionCardOffset = remember { Animatable(0f) }
 
     DisposableEffect(lifecycleOwner, context) {
@@ -173,6 +176,8 @@ private fun AutoClickScreen() {
         if (!accessibilityEnabled) {
             PermissionInstructionFirstPage(
                 disclosureAccepted = disclosureAccepted,
+                privacyExpanded = privacyExpanded,
+                onPrivacyToggle = { privacyExpanded = !privacyExpanded },
                 onCancel = { (context as? Activity)?.finish() },
                 onAllowClick = {
                     if (!disclosureAccepted) {
@@ -439,6 +444,8 @@ private fun AutoClickScreen() {
 @Composable
 private fun PermissionInstructionFirstPage(
     disclosureAccepted: Boolean,
+    privacyExpanded: Boolean,
+    onPrivacyToggle: () -> Unit,
     onCancel: () -> Unit,
     onAllowClick: () -> Unit
 ) {
@@ -481,11 +488,45 @@ private fun PermissionInstructionFirstPage(
                 containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
             )
         ) {
-            Text(
-                text = stringResource(R.string.permission_intro_privacy_title),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 18.dp),
-                style = MaterialTheme.typography.titleMedium
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onPrivacyToggle)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.permission_intro_privacy_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = if (privacyExpanded) "▲" else "▼",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+
+                if (privacyExpanded) {
+                    Text(
+                        text = stringResource(R.string.permission_intro_privacy_body),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Text(
+                        text = stringResource(R.string.permission_intro_privacy_policy_prefix),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        text = stringResource(R.string.permission_intro_privacy_policy_link),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color(0xFF2AA6FF),
+                        textDecoration = TextDecoration.Underline
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.weight(1f))
