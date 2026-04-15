@@ -1,5 +1,6 @@
 package com.playeverywhere999.skip
 
+import android.app.Activity
 import android.app.KeyguardManager
 import android.content.Intent
 import android.net.Uri
@@ -32,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -168,6 +170,23 @@ private fun AutoClickScreen() {
             .fillMaxSize()
             .background(gradientBackground)
     ) {
+        if (!accessibilityEnabled) {
+            PermissionInstructionFirstPage(
+                disclosureAccepted = disclosureAccepted,
+                onCancel = { (context as? Activity)?.finish() },
+                onAllowClick = {
+                    if (!disclosureAccepted) {
+                        permissionAttentionTrigger++
+                        return@PermissionInstructionFirstPage
+                    }
+                    AutoClickPrefs.setAccessibilityGuideRequested(context, true)
+                    guideRequested = true
+                    openAccessibilitySettings(context)
+                }
+            )
+            return@Surface
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -413,6 +432,118 @@ private fun AutoClickScreen() {
 
                 Spacer(modifier = Modifier.height(4.dp))
             }
+        }
+    }
+}
+
+@Composable
+private fun PermissionInstructionFirstPage(
+    disclosureAccepted: Boolean,
+    onCancel: () -> Unit,
+    onAllowClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.permission_intro_title),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = stringResource(R.string.permission_intro_subtitle),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        InstructionCard(
+            title = stringResource(R.string.permission_intro_why_title),
+            body = stringResource(R.string.permission_intro_why_text)
+        )
+
+        InstructionCard(
+            title = stringResource(R.string.permission_intro_how_title),
+            body = stringResource(R.string.permission_intro_how_text)
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
+            )
+        ) {
+            Text(
+                text = stringResource(R.string.permission_intro_privacy_title),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 18.dp),
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Button(
+                onClick = onCancel,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
+            ) {
+                Text(text = stringResource(R.string.permission_intro_cancel))
+            }
+            Button(
+                onClick = onAllowClick,
+                modifier = Modifier.weight(1.7f),
+                enabled = disclosureAccepted,
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF41B129),
+                    contentColor = Color.White
+                )
+            ) {
+                Text(text = stringResource(R.string.permission_intro_allow))
+            }
+        }
+    }
+}
+
+@Composable
+private fun InstructionCard(title: String, body: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = Color(0xFFFFD60A),
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = body,
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }

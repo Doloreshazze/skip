@@ -31,6 +31,15 @@
     <string name="disclosure_confirm_title">I understand and agree</string>
     <string name="disclosure_confirmed_state">Confirmed</string>
     <string name="disclosure_unconfirmed_state">Required before enabling automation</string>
+    <string name="permission_intro_title">Accessibility features</string>
+    <string name="permission_intro_subtitle">Required permission</string>
+    <string name="permission_intro_why_title">Why do we use this permission?</string>
+    <string name="permission_intro_why_text">Our app uses the AccessibilityService API to perform core actions such as tap and swipe simulation.</string>
+    <string name="permission_intro_how_title">How to enable?</string>
+    <string name="permission_intro_how_text">Tap “Allow”, find this app in the installed services list, and turn the permission on.</string>
+    <string name="permission_intro_privacy_title">Do we collect personal data?</string>
+    <string name="permission_intro_cancel">Cancel</string>
+    <string name="permission_intro_allow">Allow</string>
 
     <string name="overlay_target_not_set">&lt;not set&gt;</string>
     <string name="overlay_autoclick_on">Auto click: ON (%1$s)</string>
