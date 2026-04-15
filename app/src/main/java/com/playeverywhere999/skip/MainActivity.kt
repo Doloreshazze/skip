@@ -891,8 +891,13 @@ private fun FakeSettingsSlide(
                         }
                     }
                 } else {
-                    repeat(3) { row ->
-                        val isHighlighted = (page == 0 && row == 2) || (page == 1 && row == 0)
+                    val menuItems = when (page) {
+                        0 -> listOf("Дополнительные параметры", "Установленные службы")
+                        1 -> listOf(appName, "Другое ваше приложение", "Ещё одно приложение")
+                        else -> listOf("Раздел настроек")
+                    }
+                    menuItems.forEachIndexed { row, menuItem ->
+                        val isHighlighted = (page == 0 && row == 1) || (page == 1 && row == 0)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -905,15 +910,7 @@ private fun FakeSettingsSlide(
                             contentAlignment = Alignment.CenterStart
                         ) {
                             Text(
-                                text = when {
-                                    page == 0 && row == 2 -> "Установленные службы"
-                                    page == 1 && row == 0 -> appName
-                                    page == 0 && row == 0 -> "Нарушение координации и взаимодействие"
-                                    page == 0 && row == 1 -> "Дополнительные параметры"
-                                    page == 1 && row == 1 -> "Другое ваше приложение"
-                                    page == 1 && row == 2 -> "Ещё одно приложение"
-                                    else -> "Раздел настроек"
-                                },
+                                text = menuItem,
                                 style = MaterialTheme.typography.titleMedium,
                                 color = if (isHighlighted) Color(0xFF183A66) else Color(0xFF434343)
                             )
