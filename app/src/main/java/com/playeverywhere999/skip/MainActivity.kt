@@ -186,8 +186,8 @@ private fun AutoClickScreen() {
                 onCancel = { (context as? Activity)?.finish() },
                 onAllowClick = {
                     if (!disclosureAccepted) {
-                        permissionAttentionTrigger++
-                        return@PermissionInstructionFirstPage
+                        disclosureAccepted = true
+                        AutoClickPrefs.setDisclosureAccepted(context, true)
                     }
                     showAllowOverlay = true
                 },
@@ -570,7 +570,6 @@ private fun PermissionInstructionFirstPage(
                 Button(
                     onClick = onAllowClick,
                     modifier = Modifier.weight(1.7f),
-                    enabled = disclosureAccepted,
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF41B129),
