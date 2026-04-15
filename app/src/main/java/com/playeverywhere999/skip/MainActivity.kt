@@ -60,10 +60,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.Modifier
@@ -144,6 +140,7 @@ private fun AutoClickScreen() {
     var guideRequested by rememberSaveable { mutableStateOf(AutoClickPrefs.isAccessibilityGuideRequested(context)) }
     var screenLocked by remember { mutableStateOf(isScreenLocked(context)) }
     var permissionAttentionTrigger by remember { mutableIntStateOf(0) }
+    var permissionShakePlayed by rememberSaveable { mutableStateOf(false) }
     var privacyExpanded by rememberSaveable { mutableStateOf(false) }
     var showAllowOverlay by rememberSaveable { mutableStateOf(false) }
     val permissionCardOffset = remember { Animatable(0f) }
@@ -161,7 +158,7 @@ private fun AutoClickScreen() {
     }
 
     LaunchedEffect(permissionAttentionTrigger) {
-        if (permissionAttentionTrigger == 0) return@LaunchedEffect
+        if (permissionAttentionTrigger == 0 || permissionShakePlayed) return@LaunchedEffect
 
         val shakeOffsets = listOf(-30f, 30f, -24f, 24f, -12f, 12f, 0f)
         for (offset in shakeOffsets) {
@@ -170,6 +167,7 @@ private fun AutoClickScreen() {
                 animationSpec = tween(durationMillis = 45)
             )
         }
+        permissionShakePlayed = true
     }
 
     val gradientBackground = Brush.verticalGradient(
@@ -624,37 +622,24 @@ private fun AllowInstructionOverlay(
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
     val coroutineScope = rememberCoroutineScope()
     val isLastPage = pagerState.currentPage == pageCount - 1
-    var thirdSlideVisitToken by remember { mutableIntStateOf(0) }
-    var previousSettledPage by remember { mutableIntStateOf(-1) }
-    val transition = rememberInfiniteTransition(label = "overlayHighlight")
-    val highlightAlpha by transition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 0.9f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 850),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "overlayHighlightAlpha"
-    )
+    val highlightAlpha = remember { Animatable(0.35f) }
+    var autoSlidePlayed by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(isDragged) {
-        while (true) {
-            delay(2800)
-            if (isDragged) continue
-            val currentPage = pagerState.settledPage
-            if (currentPage < pageCount - 1) {
-                val nextPage = currentPage + 1
-                pagerState.animateScrollToPage(nextPage)
-            }
-        }
+    LaunchedEffect(Unit) {
+        highlightAlpha.animateTo(0.9f, animationSpec = tween(durationMillis = 850))
     }
 
-    LaunchedEffect(pagerState.settledPage) {
-        val current = pagerState.settledPage
-        if (current == 2 && previousSettledPage != 2) {
-            thirdSlideVisitToken++
+    LaunchedEffect(isDragged, autoSlidePlayed) {
+        if (autoSlidePlayed) return@LaunchedEffect
+        delay(2800)
+        if (!isDragged && pagerState.settledPage == 0) {
+            pagerState.animateScrollToPage(1)
         }
-        previousSettledPage = current
+        delay(2800)
+        if (!isDragged && pagerState.settledPage == 1) {
+            pagerState.animateScrollToPage(2)
+        }
+        autoSlidePlayed = true
     }
 
     Card(
@@ -725,8 +710,7 @@ private fun AllowInstructionOverlay(
                 ) { page ->
                     FakeSettingsSlide(
                         page = page,
-                        highlightAlpha = highlightAlpha,
-                        thirdSlideVisitToken = thirdSlideVisitToken
+                        highlightAlpha = highlightAlpha.value
                     )
                 }
 
@@ -810,22 +794,21 @@ private fun OverlayStepLine(
 @Composable
 private fun FakeSettingsSlide(
     page: Int,
-    highlightAlpha: Float,
-    thirdSlideVisitToken: Int
+    highlightAlpha: Float
 ) {
     val appName = stringResource(R.string.app_name)
+    var switchAnimationPlayed by rememberSaveable { mutableStateOf(false) }
     val switchProgress = remember { Animatable(0f) }
 
-    LaunchedEffect(page, thirdSlideVisitToken) {
-        if (page == 2 && thirdSlideVisitToken > 0) {
+    LaunchedEffect(page, switchAnimationPlayed) {
+        if (page == 2 && !switchAnimationPlayed) {
             switchProgress.snapTo(0f)
             delay(450)
             switchProgress.animateTo(
                 targetValue = 1f,
                 animationSpec = tween(durationMillis = 650)
             )
-        } else {
-            switchProgress.snapTo(0f)
+            switchAnimationPlayed = true
         }
     }
 
@@ -1003,18 +986,8 @@ private const val ACTION_ACCESSIBILITY_DETAILS_SETTINGS =
 
 @Composable
 private fun GuideStatusRow(active: Boolean) {
-    val transition = rememberInfiniteTransition(label = "guideStatus")
-    val alpha by transition.animateFloat(
-        initialValue = 0.45f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 900),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "guideAlpha"
-    )
     val tint = if (active) {
-        MaterialTheme.colorScheme.primary.copy(alpha = alpha)
+        MaterialTheme.colorScheme.primary
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     }
