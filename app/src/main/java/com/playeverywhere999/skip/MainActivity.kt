@@ -620,6 +620,7 @@ private fun AllowInstructionOverlay(
     val pagerState = rememberPagerState(pageCount = { pageCount })
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
     val coroutineScope = rememberCoroutineScope()
+    val isLastPage = pagerState.currentPage == pageCount - 1
     val transition = rememberInfiniteTransition(label = "overlayHighlight")
     val highlightAlpha by transition.animateFloat(
         initialValue = 0.35f,
@@ -724,8 +725,8 @@ private fun AllowInstructionOverlay(
 
             Button(
                 onClick = {
-                    if (pagerState.currentPage < pageCount - 1) {
-                        val next = pagerState.currentPage + 1
+                    if (!isLastPage) {
+                        val next = (pagerState.currentPage + 1).coerceAtMost(pageCount - 1)
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(next)
                         }
@@ -741,7 +742,7 @@ private fun AllowInstructionOverlay(
                 )
             ) {
                 Text(
-                    text = if (pagerState.currentPage == pageCount - 1) {
+                    text = if (isLastPage) {
                         stringResource(R.string.permission_intro_allow)
                     } else {
                         stringResource(R.string.permission_overlay_next)
