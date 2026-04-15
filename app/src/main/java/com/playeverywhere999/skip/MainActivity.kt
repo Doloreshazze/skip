@@ -778,6 +778,8 @@ private fun FakeSettingsSlide(
     page: Int,
     highlightAlpha: Float
 ) {
+    val appName = stringResource(R.string.app_name)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -820,7 +822,7 @@ private fun FakeSettingsSlide(
                         Text(
                             text = when {
                                 page == 0 && row == 2 -> "Установленные службы"
-                                page == 1 && row == 0 -> "название"
+                                page == 1 && row == 0 -> appName
                                 page == 2 && row == 1 -> "Выключено     ○○"
                                 else -> "Пункт меню ${row + 1}"
                             },
