@@ -893,7 +893,7 @@ private fun FakeSettingsSlide(
                 } else {
                     val menuItems = when (page) {
                         0 -> listOf("Дополнительные параметры", "Установленные службы")
-                        1 -> listOf(appName, "Другое ваше приложение", "Ещё одно приложение")
+                        1 -> listOf(appName, "Другое ваше приложение")
                         else -> listOf("Раздел настроек")
                     }
                     menuItems.forEachIndexed { row, menuItem ->
