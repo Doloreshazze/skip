@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Skip</string>
+    <string name="app_name">skip autoclick 🦔</string>
     <string name="accessibility_service_name">Skip Автоклик</string>
     <string name="accessibility_service_description">Ищет и нажимает только выбранный пользователем текст на экране. Обработка выполняется на устройстве и может быть отключена в любой момент.</string>
 
@@ -31,6 +31,26 @@
     <string name="disclosure_confirm_title">Я понимаю и согласен</string>
     <string name="disclosure_confirmed_state">Подтверждено</string>
     <string name="disclosure_unconfirmed_state">Требуется перед включением автоматизации</string>
+    <string name="permission_intro_title">Специальные возможности</string>
+    <string name="permission_intro_subtitle">Требуется обязательное разрешение</string>
+    <string name="permission_intro_why_title">Почему мы используем это разрешение?</string>
+    <string name="permission_intro_why_text">Наше приложение использует API AccessibilityService для реализации основных функций, таких как нажатия и свайпы.</string>
+    <string name="permission_intro_how_title">Как делать?</string>
+    <string name="permission_intro_how_text">Нажмите «Разрешить», затем найдите приложение в списке установленных сервисов и активируйте разрешение.</string>
+    <string name="permission_intro_privacy_title">Собираем ли мы личные данные?</string>
+    <string name="permission_intro_privacy_body">НЕТ. Мы не собираем ваши личные данные с использованием этого разрешения.</string>
+    <string name="permission_intro_privacy_policy_prefix">Наше приложение полностью соответствует условиям требований к раскрытию и передаче данных в</string>
+    <string name="permission_intro_privacy_policy_link">Политике Google Play в отношении данных пользователя.</string>
+    <string name="permission_intro_privacy_policy_url">https://support.google.com/googleplay/android-developer/answer/10144311</string>
+    <string name="permission_overlay_title">Как делать?</string>
+    <string name="permission_overlay_body">Нажмите «Разрешить», затем выполните шаги в системных настройках.</string>
+    <string name="permission_overlay_steps">1. Перейдите в «Установленные службы».\n2. Найдите «%1$s».\n3. Предоставьте разрешение сервису.</string>
+    <string name="permission_overlay_step_1">1. Перейдите в «Установленные службы» в настройках</string>
+    <string name="permission_overlay_step_2">2. Найдите «%1$s»</string>
+    <string name="permission_overlay_step_3">3. Предоставьте разрешение</string>
+    <string name="permission_overlay_next">Следующее</string>
+    <string name="permission_intro_cancel">Отмена</string>
+    <string name="permission_intro_allow">Разрешить</string>
 
     <string name="overlay_target_not_set">&lt;не задан&gt;</string>
     <string name="overlay_autoclick_on">Автоклик: ВКЛ (%1$s)</string>
