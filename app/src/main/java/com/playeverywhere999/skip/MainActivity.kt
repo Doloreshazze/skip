@@ -816,7 +816,11 @@ private fun FakeSettingsSlide(
                     .background(Color(0xFFA9A9AA))
             ) {
                 Text(
-                    text = if (page == 0) "Специальные возможности" else "Специальные",
+                    text = when (page) {
+                        0 -> "Специальные возможности"
+                        2 -> appName
+                        else -> "Специальные"
+                    },
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.titleMedium
                 )
@@ -828,6 +832,21 @@ private fun FakeSettingsSlide(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (page == 2) {
+                    Box(
+                        modifier = Modifier
+                            .width(180.dp)
+                            .height(34.dp)
+                            .background(Color(0xFFEFEFF0), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 10.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = appName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF333333)
+                        )
+                    }
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -845,7 +864,7 @@ private fun FakeSettingsSlide(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = appName,
+                                text = if (switchProgress < 0.55f) "Выключено" else "Включено",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = Color(0xFF183A66),
                                 fontWeight = FontWeight.SemiBold
