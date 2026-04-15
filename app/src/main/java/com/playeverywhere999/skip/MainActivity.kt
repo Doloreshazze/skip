@@ -496,12 +496,13 @@ private fun PermissionInstructionFirstPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(onClick = onPrivacyToggle)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onPrivacyToggle),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
