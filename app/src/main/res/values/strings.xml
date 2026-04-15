@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">🦔 Skip</string>
+    <string name="app_name">/ёж/ skip autoclick /ёж/</string>
     <string name="accessibility_service_name">Skip Auto Click</string>
     <string name="accessibility_service_description">Finds and taps only user-selected on-screen text. Processing stays on device and can be disabled anytime.</string>
 
