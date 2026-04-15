@@ -61,6 +61,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.unit.IntOffset
@@ -68,6 +69,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
@@ -782,6 +784,22 @@ private fun FakeSettingsSlide(
     highlightAlpha: Float
 ) {
     val appName = stringResource(R.string.app_name)
+    val switchTransition = rememberInfiniteTransition(label = "fakeSwitch")
+    val switchProgress by switchTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = keyframes {
+                durationMillis = 2200
+                0f at 0
+                0f at 750
+                1f at 1250
+                1f at 2000
+            },
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "fakeSwitchProgress"
+    )
 
     Card(
         modifier = Modifier
@@ -809,35 +827,77 @@ private fun FakeSettingsSlide(
                     .padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                repeat(3) { row ->
-                    val isHighlighted = (page == 0 && row == 2) || (page == 1 && row == 0) || (page == 2 && row == 1)
+                if (page == 2) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
+                            .height(72.dp)
                             .background(
-                                if (isHighlighted) Color(0xFFB8D9FF).copy(alpha = highlightAlpha) else Color(0xFFE4E4E4),
-                                RoundedCornerShape(12.dp)
+                                Color(0xFFB8D9FF).copy(alpha = highlightAlpha),
+                                RoundedCornerShape(14.dp)
                             )
-                            .padding(horizontal = 12.dp),
+                            .padding(horizontal = 14.dp),
                         contentAlignment = Alignment.CenterStart
                     ) {
-                        Text(
-                            text = when {
-                                page == 0 && row == 2 -> "Установленные службы"
-                                page == 1 && row == 0 -> appName
-                                page == 2 && row == 1 -> "Выключено     ○○"
-                                page == 0 && row == 0 -> "Нарушение координации и взаимодействие"
-                                page == 0 && row == 1 -> "Дополнительные параметры"
-                                page == 1 && row == 1 -> "Другое ваше приложение"
-                                page == 1 && row == 2 -> "Ещё одно приложение"
-                                page == 2 && row == 0 -> "Включено"
-                                page == 2 && row == 2 -> "Другой сервис"
-                                else -> "Раздел настроек"
-                            },
-                            style = MaterialTheme.typography.titleMedium,
-                            color = if (isHighlighted) Color(0xFF183A66) else Color(0xFF434343)
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = appName,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color(0xFF183A66),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .width(54.dp)
+                                    .height(30.dp)
+                                    .background(
+                                        lerp(Color(0xFF9EA5B3), Color(0xFF4F84F4), switchProgress),
+                                        RoundedCornerShape(20.dp)
+                                    )
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterStart)
+                                        .offset(x = (3 + 22 * switchProgress).dp)
+                                        .width(24.dp)
+                                        .height(24.dp)
+                                        .background(Color.White, RoundedCornerShape(50))
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    repeat(3) { row ->
+                        val isHighlighted = (page == 0 && row == 2) || (page == 1 && row == 0)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .background(
+                                    if (isHighlighted) Color(0xFFB8D9FF).copy(alpha = highlightAlpha) else Color(0xFFE4E4E4),
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Text(
+                                text = when {
+                                    page == 0 && row == 2 -> "Установленные службы"
+                                    page == 1 && row == 0 -> appName
+                                    page == 0 && row == 0 -> "Нарушение координации и взаимодействие"
+                                    page == 0 && row == 1 -> "Дополнительные параметры"
+                                    page == 1 && row == 1 -> "Другое ваше приложение"
+                                    page == 1 && row == 2 -> "Ещё одно приложение"
+                                    else -> "Раздел настроек"
+                                },
+                                style = MaterialTheme.typography.titleMedium,
+                                color = if (isHighlighted) Color(0xFF183A66) else Color(0xFF434343)
+                            )
+                        }
                     }
                 }
             }
