@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Skip</string>
+    <string name="app_name">🦔 skip autoclick 🦔</string>
     <string name="accessibility_service_name">Skip Auto Click</string>
     <string name="accessibility_service_description">Finds and taps only user-selected on-screen text. Processing stays on device and can be disabled anytime.</string>
 
@@ -31,6 +31,26 @@
     <string name="disclosure_confirm_title">I understand and agree</string>
     <string name="disclosure_confirmed_state">Confirmed</string>
     <string name="disclosure_unconfirmed_state">Required before enabling automation</string>
+    <string name="permission_intro_title">Accessibility features</string>
+    <string name="permission_intro_subtitle">Required permission</string>
+    <string name="permission_intro_why_title">Why do we use this permission?</string>
+    <string name="permission_intro_why_text">Our app uses the AccessibilityService API to perform core actions such as tap and swipe simulation.</string>
+    <string name="permission_intro_how_title">How to enable?</string>
+    <string name="permission_intro_how_text">Tap “Allow”, find this app in the installed services list, and turn the permission on.</string>
+    <string name="permission_intro_privacy_title">Do we collect personal data?</string>
+    <string name="permission_intro_privacy_body">NO. We do not collect your personal data using this permission.</string>
+    <string name="permission_intro_privacy_policy_prefix">Our app fully complies with the disclosure and data transfer requirements in</string>
+    <string name="permission_intro_privacy_policy_link">Google Play User Data Policy.</string>
+    <string name="permission_intro_privacy_policy_url">https://support.google.com/googleplay/android-developer/answer/10144311</string>
+    <string name="permission_overlay_title">How to do it?</string>
+    <string name="permission_overlay_body">Tap “Allow”, then follow these steps in system settings.</string>
+    <string name="permission_overlay_steps">1. Open “Installed services”.\n2. Find “%1$s”.\n3. Enable the permission for the service.</string>
+    <string name="permission_overlay_step_1">1. Open “Installed services” in settings</string>
+    <string name="permission_overlay_step_2">2. Find “%1$s”</string>
+    <string name="permission_overlay_step_3">3. Grant permission</string>
+    <string name="permission_overlay_next">Next</string>
+    <string name="permission_intro_cancel">Cancel</string>
+    <string name="permission_intro_allow">Allow</string>
 
     <string name="overlay_target_not_set">&lt;not set&gt;</string>
     <string name="overlay_autoclick_on">Auto click: ON (%1$s)</string>
