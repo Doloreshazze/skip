@@ -640,8 +640,10 @@ private fun AllowInstructionOverlay(
         while (true) {
             delay(2800)
             if (isDragged) continue
-            val nextPage = (pagerState.currentPage + 1) % pageCount
-            pagerState.animateScrollToPage(nextPage)
+            if (pagerState.currentPage < pageCount - 1) {
+                val nextPage = pagerState.currentPage + 1
+                pagerState.animateScrollToPage(nextPage)
+            }
         }
     }
 
