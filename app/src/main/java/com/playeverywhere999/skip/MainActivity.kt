@@ -624,6 +624,8 @@ private fun AllowInstructionOverlay(
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
     val coroutineScope = rememberCoroutineScope()
     val isLastPage = pagerState.currentPage == pageCount - 1
+    var thirdSlideVisitToken by remember { mutableIntStateOf(0) }
+    var previousSettledPage by remember { mutableIntStateOf(-1) }
     val transition = rememberInfiniteTransition(label = "overlayHighlight")
     val highlightAlpha by transition.animateFloat(
         initialValue = 0.35f,
@@ -645,6 +647,14 @@ private fun AllowInstructionOverlay(
                 pagerState.animateScrollToPage(nextPage)
             }
         }
+    }
+
+    LaunchedEffect(pagerState.settledPage) {
+        val current = pagerState.settledPage
+        if (current == 2 && previousSettledPage != 2) {
+            thirdSlideVisitToken++
+        }
+        previousSettledPage = current
     }
 
     Card(
@@ -715,7 +725,8 @@ private fun AllowInstructionOverlay(
                 ) { page ->
                     FakeSettingsSlide(
                         page = page,
-                        highlightAlpha = highlightAlpha
+                        highlightAlpha = highlightAlpha,
+                        thirdSlideVisitToken = thirdSlideVisitToken
                     )
                 }
 
@@ -799,13 +810,14 @@ private fun OverlayStepLine(
 @Composable
 private fun FakeSettingsSlide(
     page: Int,
-    highlightAlpha: Float
+    highlightAlpha: Float,
+    thirdSlideVisitToken: Int
 ) {
     val appName = stringResource(R.string.app_name)
     val switchProgress = remember { Animatable(0f) }
 
-    LaunchedEffect(page) {
-        if (page == 2) {
+    LaunchedEffect(page, thirdSlideVisitToken) {
+        if (page == 2 && thirdSlideVisitToken > 0) {
             switchProgress.snapTo(0f)
             delay(450)
             switchProgress.animateTo(
