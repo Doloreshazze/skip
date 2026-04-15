@@ -655,13 +655,13 @@ private fun AllowInstructionOverlay(
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -684,7 +684,7 @@ private fun AllowInstructionOverlay(
 
                 Text(
                     text = stringResource(R.string.permission_overlay_body),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFFE6E9F2)
                 )
 
@@ -788,7 +788,7 @@ private fun OverlayStepLine(
         )
         Text(
             text = text,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = if (active) Color(0xFFF2F4FA) else Color(0xFF9EA6B9),
             fontWeight = if (active) FontWeight.Bold else FontWeight.Normal
         )
@@ -819,7 +819,7 @@ private fun FakeSettingsSlide(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(260.dp),
+            .height(220.dp),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFADADAE))
     ) {
