@@ -680,7 +680,10 @@ private fun AllowInstructionOverlay(
             OverlayStepLine(
                 index = 1,
                 activeIndex = pagerState.currentPage,
-                text = stringResource(R.string.permission_overlay_step_2)
+                text = stringResource(
+                    R.string.permission_overlay_step_2,
+                    stringResource(R.string.app_name)
+                )
             )
             OverlayStepLine(
                 index = 2,
