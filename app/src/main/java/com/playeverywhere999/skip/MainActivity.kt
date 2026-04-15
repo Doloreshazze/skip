@@ -18,6 +18,7 @@ import androidx.core.view.ViewCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -135,6 +136,7 @@ private fun AutoClickScreen() {
     var screenLocked by remember { mutableStateOf(isScreenLocked(context)) }
     var permissionAttentionTrigger by remember { mutableIntStateOf(0) }
     var privacyExpanded by rememberSaveable { mutableStateOf(false) }
+    var showAllowOverlay by rememberSaveable { mutableStateOf(false) }
     val permissionCardOffset = remember { Animatable(0f) }
 
     DisposableEffect(lifecycleOwner, context) {
@@ -179,12 +181,18 @@ private fun AutoClickScreen() {
                 disclosureAccepted = disclosureAccepted,
                 privacyExpanded = privacyExpanded,
                 onPrivacyToggle = { privacyExpanded = !privacyExpanded },
+                showAllowOverlay = showAllowOverlay,
+                onDismissOverlay = { showAllowOverlay = false },
                 onCancel = { (context as? Activity)?.finish() },
                 onAllowClick = {
                     if (!disclosureAccepted) {
                         permissionAttentionTrigger++
                         return@PermissionInstructionFirstPage
                     }
+                    showAllowOverlay = true
+                },
+                onConfirmOverlay = {
+                    showAllowOverlay = false
                     AutoClickPrefs.setAccessibilityGuideRequested(context, true)
                     guideRequested = true
                     openAccessibilitySettings(context)
@@ -447,39 +455,43 @@ private fun PermissionInstructionFirstPage(
     disclosureAccepted: Boolean,
     privacyExpanded: Boolean,
     onPrivacyToggle: () -> Unit,
+    showAllowOverlay: Boolean,
+    onDismissOverlay: () -> Unit,
     onCancel: () -> Unit,
-    onAllowClick: () -> Unit
+    onAllowClick: () -> Unit,
+    onConfirmOverlay: () -> Unit
 ) {
     val uriHandler = LocalUriHandler.current
     val policyUrl = stringResource(R.string.permission_intro_privacy_policy_url)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text(
-                text = stringResource(R.string.permission_intro_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = stringResource(R.string.permission_intro_subtitle),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.permission_intro_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = stringResource(R.string.permission_intro_subtitle),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-        InstructionCard(
-            title = stringResource(R.string.permission_intro_why_title),
-            body = stringResource(R.string.permission_intro_why_text)
-        )
+            InstructionCard(
+                title = stringResource(R.string.permission_intro_why_title),
+                body = stringResource(R.string.permission_intro_why_text)
+            )
 
         InstructionCard(
             title = stringResource(R.string.permission_intro_how_title),
@@ -540,32 +552,115 @@ private fun PermissionInstructionFirstPage(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Button(
-                onClick = onCancel,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(text = stringResource(R.string.permission_intro_cancel))
+                Button(
+                    onClick = onCancel,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                ) {
+                    Text(text = stringResource(R.string.permission_intro_cancel))
+                }
+                Button(
+                    onClick = onAllowClick,
+                    modifier = Modifier.weight(1.7f),
+                    enabled = disclosureAccepted,
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF41B129),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(text = stringResource(R.string.permission_intro_allow))
+                }
             }
+        }
+
+        if (showAllowOverlay) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.58f))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { onDismissOverlay() }
+            )
+            AllowInstructionOverlay(
+                onClose = onDismissOverlay,
+                onConfirm = onConfirmOverlay,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = 20.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun AllowInstructionOverlay(
+    onClose: () -> Unit,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF313B57))
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.permission_overlay_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "✕",
+                    color = Color(0xFFA9B0C3),
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.clickable(onClick = onClose)
+                )
+            }
+
+            Text(
+                text = stringResource(R.string.permission_overlay_body),
+                style = MaterialTheme.typography.titleLarge,
+                color = Color(0xFFE6E9F2)
+            )
+            Text(
+                text = stringResource(R.string.permission_overlay_steps),
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color(0xFFC1C7D8)
+            )
+
             Button(
-                onClick = onAllowClick,
-                modifier = Modifier.weight(1.7f),
-                enabled = disclosureAccepted,
+                onClick = onConfirm,
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF41B129),
                     contentColor = Color.White
                 )
             ) {
-                Text(text = stringResource(R.string.permission_intro_allow))
+                Text(
+                    text = stringResource(R.string.permission_intro_allow),
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
         }
     }

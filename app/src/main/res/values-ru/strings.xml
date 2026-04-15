@@ -42,6 +42,9 @@
     <string name="permission_intro_privacy_policy_prefix">Наше приложение полностью соответствует условиям требований к раскрытию и передаче данных в</string>
     <string name="permission_intro_privacy_policy_link">Политике Google Play в отношении данных пользователя.</string>
     <string name="permission_intro_privacy_policy_url">https://support.google.com/googleplay/android-developer/answer/10144311</string>
+    <string name="permission_overlay_title">Как делать?</string>
+    <string name="permission_overlay_body">Нажмите «Разрешить», затем выполните шаги в системных настройках.</string>
+    <string name="permission_overlay_steps">1. Перейдите в «Установленные службы».\n2. Найдите «Skip Автоклик».\n3. Предоставьте разрешение сервису.</string>
     <string name="permission_intro_cancel">Отмена</string>
     <string name="permission_intro_allow">Разрешить</string>
 
