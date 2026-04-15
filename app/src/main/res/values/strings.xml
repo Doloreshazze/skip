@@ -45,6 +45,10 @@
     <string name="permission_overlay_title">How to do it?</string>
     <string name="permission_overlay_body">Tap “Allow”, then follow these steps in system settings.</string>
     <string name="permission_overlay_steps">1. Open “Installed services”.\n2. Find “Skip Auto Click”.\n3. Enable the permission for the service.</string>
+    <string name="permission_overlay_step_1">1. Open “Installed services” in settings</string>
+    <string name="permission_overlay_step_2">2. Find “Skip Auto Click”</string>
+    <string name="permission_overlay_step_3">3. Grant permission</string>
+    <string name="permission_overlay_next">Next</string>
     <string name="permission_intro_cancel">Cancel</string>
     <string name="permission_intro_allow">Allow</string>
 

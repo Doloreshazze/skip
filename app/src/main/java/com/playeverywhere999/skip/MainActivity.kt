@@ -19,6 +19,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -51,6 +54,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.animation.core.Animatable
@@ -75,6 +79,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.playeverywhere999.skip.ui.theme.SkipTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val insetsController by lazy { WindowInsetsControllerCompat(window, window.decorView) }
@@ -608,6 +614,30 @@ private fun AllowInstructionOverlay(
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val pageCount = 3
+    val pagerState = rememberPagerState(pageCount = { pageCount })
+    val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
+    val coroutineScope = rememberCoroutineScope()
+    val transition = rememberInfiniteTransition(label = "overlayHighlight")
+    val highlightAlpha by transition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 0.9f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 850),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "overlayHighlightAlpha"
+    )
+
+    LaunchedEffect(isDragged) {
+        while (true) {
+            delay(2800)
+            if (isDragged) continue
+            val nextPage = (pagerState.currentPage + 1) % pageCount
+            pagerState.animateScrollToPage(nextPage)
+        }
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -641,14 +671,63 @@ private fun AllowInstructionOverlay(
                 style = MaterialTheme.typography.titleLarge,
                 color = Color(0xFFE6E9F2)
             )
-            Text(
-                text = stringResource(R.string.permission_overlay_steps),
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color(0xFFC1C7D8)
+
+            OverlayStepLine(
+                index = 0,
+                activeIndex = pagerState.currentPage,
+                text = stringResource(R.string.permission_overlay_step_1)
+            )
+            OverlayStepLine(
+                index = 1,
+                activeIndex = pagerState.currentPage,
+                text = stringResource(R.string.permission_overlay_step_2)
+            )
+            OverlayStepLine(
+                index = 2,
+                activeIndex = pagerState.currentPage,
+                text = stringResource(R.string.permission_overlay_step_3)
             )
 
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth(),
+                pageSpacing = 12.dp
+            ) { page ->
+                FakeSettingsSlide(
+                    page = page,
+                    highlightAlpha = highlightAlpha
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                repeat(pageCount) { index ->
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .width(if (index == pagerState.currentPage) 20.dp else 8.dp)
+                            .height(8.dp)
+                            .background(
+                                color = if (index == pagerState.currentPage) Color(0xFFE9EDF7) else Color(0xFF7F879A),
+                                shape = RoundedCornerShape(50)
+                            )
+                    )
+                }
+            }
+
             Button(
-                onClick = onConfirm,
+                onClick = {
+                    if (pagerState.currentPage < pageCount - 1) {
+                        val next = pagerState.currentPage + 1
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(next)
+                        }
+                    } else {
+                        onConfirm()
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -657,9 +736,99 @@ private fun AllowInstructionOverlay(
                 )
             ) {
                 Text(
-                    text = stringResource(R.string.permission_intro_allow),
+                    text = if (pagerState.currentPage == pageCount - 1) {
+                        stringResource(R.string.permission_intro_allow)
+                    } else {
+                        stringResource(R.string.permission_overlay_next)
+                    },
                     style = MaterialTheme.typography.titleLarge
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun OverlayStepLine(
+    index: Int,
+    activeIndex: Int,
+    text: String
+) {
+    val active = index == activeIndex
+    Row(
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = if (active) "▶" else " ",
+            color = if (active) Color(0xFFFFD60A) else Color.Transparent,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.headlineSmall,
+            color = if (active) Color(0xFFF2F4FA) else Color(0xFF9EA6B9),
+            fontWeight = if (active) FontWeight.Bold else FontWeight.Normal
+        )
+    }
+}
+
+@Composable
+private fun FakeSettingsSlide(
+    page: Int,
+    highlightAlpha: Float
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(260.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFADADAE))
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(Color(0xFFA9A9AA))
+            ) {
+                Text(
+                    text = if (page == 0) "Специальные возможности" else "Специальные",
+                    modifier = Modifier.align(Alignment.Center),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                repeat(3) { row ->
+                    val isHighlighted = (page == 0 && row == 2) || (page == 1 && row == 0) || (page == 2 && row == 1)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .background(
+                                if (isHighlighted) Color(0xFFB8D9FF).copy(alpha = highlightAlpha) else Color(0xFFE4E4E4),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(horizontal = 12.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = when {
+                                page == 0 && row == 2 -> "Установленные службы"
+                                page == 1 && row == 0 -> "название"
+                                page == 2 && row == 1 -> "Выключено     ○○"
+                                else -> "Пункт меню ${row + 1}"
+                            },
+                            style = MaterialTheme.typography.titleMedium,
+                            color = if (isHighlighted) Color(0xFF183A66) else Color(0xFF434343)
+                        )
+                    }
+                }
             }
         }
     }
