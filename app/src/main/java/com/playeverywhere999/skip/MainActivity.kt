@@ -834,21 +834,6 @@ private fun FakeSettingsSlide(
                 if (page == 2) {
                     Box(
                         modifier = Modifier
-                            .width(180.dp)
-                            .height(34.dp)
-                            .background(Color(0xFFEFEFF0), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 10.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Text(
-                            text = appName,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF333333)
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
                             .fillMaxWidth()
                             .height(72.dp)
                             .background(
