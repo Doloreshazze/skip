@@ -31,6 +31,8 @@
     <string name="disclosure_confirm_title">I understand and agree</string>
     <string name="disclosure_confirmed_state">Confirmed</string>
     <string name="disclosure_unconfirmed_state">Required before enabling automation</string>
+    <string name="disclosure_cta_next">Next</string>
+    <string name="disclosure_cta_allow">Allow</string>
 
     <string name="overlay_target_not_set">&lt;not set&gt;</string>
     <string name="overlay_autoclick_on">Auto click: ON (%1$s)</string>

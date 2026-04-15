@@ -31,6 +31,8 @@
     <string name="disclosure_confirm_title">Я понимаю и согласен</string>
     <string name="disclosure_confirmed_state">Подтверждено</string>
     <string name="disclosure_unconfirmed_state">Требуется перед включением автоматизации</string>
+    <string name="disclosure_cta_next">Следующий</string>
+    <string name="disclosure_cta_allow">Разрешить</string>
 
     <string name="overlay_target_not_set">&lt;не задан&gt;</string>
     <string name="overlay_autoclick_on">Автоклик: ВКЛ (%1$s)</string>
