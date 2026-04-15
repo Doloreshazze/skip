@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -617,6 +618,8 @@ private fun AllowInstructionOverlay(
     modifier: Modifier = Modifier
 ) {
     val pageCount = 3
+    val context = LocalContext.current
+    val appName = stringResource(R.string.app_name)
     val pagerState = rememberPagerState(pageCount = { pageCount })
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
     val coroutineScope = rememberCoroutineScope()
@@ -731,6 +734,7 @@ private fun AllowInstructionOverlay(
                             pagerState.animateScrollToPage(next)
                         }
                     } else {
+                        Toast.makeText(context, appName, Toast.LENGTH_SHORT).show()
                         onConfirm()
                     }
                 },
