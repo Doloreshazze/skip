@@ -451,6 +451,7 @@ private fun PermissionInstructionFirstPage(
     onAllowClick: () -> Unit
 ) {
     val uriHandler = LocalUriHandler.current
+    val policyUrl = stringResource(R.string.permission_intro_privacy_policy_url)
 
     Column(
         modifier = Modifier
@@ -529,9 +530,7 @@ private fun PermissionInstructionFirstPage(
                         color = Color(0xFF2AA6FF),
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable {
-                            uriHandler.openUri(
-                                stringResource(R.string.permission_intro_privacy_policy_url)
-                            )
+                            uriHandler.openUri(policyUrl)
                         }
                     )
                 }
