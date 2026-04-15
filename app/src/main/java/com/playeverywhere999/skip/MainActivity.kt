@@ -645,7 +645,9 @@ private fun AllowInstructionOverlay(
     }
 
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(max = 720.dp),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF313B57))
     ) {
@@ -653,79 +655,87 @@ private fun AllowInstructionOverlay(
             modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.permission_overlay_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "✕",
-                    color = Color(0xFFA9B0C3),
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.clickable(onClick = onClose)
-                )
-            }
-
-            Text(
-                text = stringResource(R.string.permission_overlay_body),
-                style = MaterialTheme.typography.titleLarge,
-                color = Color(0xFFE6E9F2)
-            )
-
-            OverlayStepLine(
-                index = 0,
-                activeIndex = pagerState.currentPage,
-                text = stringResource(R.string.permission_overlay_step_1)
-            )
-            OverlayStepLine(
-                index = 1,
-                activeIndex = pagerState.currentPage,
-                text = stringResource(
-                    R.string.permission_overlay_step_2,
-                    stringResource(R.string.app_name)
-                )
-            )
-            OverlayStepLine(
-                index = 2,
-                activeIndex = pagerState.currentPage,
-                text = stringResource(R.string.permission_overlay_step_3)
-            )
-
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxWidth(),
-                pageSpacing = 12.dp
-            ) { page ->
-                FakeSettingsSlide(
-                    page = page,
-                    highlightAlpha = highlightAlpha
-                )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                repeat(pageCount) { index ->
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .width(if (index == pagerState.currentPage) 20.dp else 8.dp)
-                            .height(8.dp)
-                            .background(
-                                color = if (index == pagerState.currentPage) Color(0xFFE9EDF7) else Color(0xFF7F879A),
-                                shape = RoundedCornerShape(50)
-                            )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.permission_overlay_title),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
                     )
+                    Text(
+                        text = "✕",
+                        color = Color(0xFFA9B0C3),
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.clickable(onClick = onClose)
+                    )
+                }
+
+                Text(
+                    text = stringResource(R.string.permission_overlay_body),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color(0xFFE6E9F2)
+                )
+
+                OverlayStepLine(
+                    index = 0,
+                    activeIndex = pagerState.currentPage,
+                    text = stringResource(R.string.permission_overlay_step_1)
+                )
+                OverlayStepLine(
+                    index = 1,
+                    activeIndex = pagerState.currentPage,
+                    text = stringResource(
+                        R.string.permission_overlay_step_2,
+                        stringResource(R.string.app_name)
+                    )
+                )
+                OverlayStepLine(
+                    index = 2,
+                    activeIndex = pagerState.currentPage,
+                    text = stringResource(R.string.permission_overlay_step_3)
+                )
+
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxWidth(),
+                    pageSpacing = 12.dp
+                ) { page ->
+                    FakeSettingsSlide(
+                        page = page,
+                        highlightAlpha = highlightAlpha
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    repeat(pageCount) { index ->
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .width(if (index == pagerState.currentPage) 20.dp else 8.dp)
+                                .height(8.dp)
+                                .background(
+                                    color = if (index == pagerState.currentPage) Color(0xFFE9EDF7) else Color(0xFF7F879A),
+                                    shape = RoundedCornerShape(50)
+                                )
+                        )
+                    }
                 }
             }
 
+            Spacer(modifier = Modifier.height(4.dp))
             Button(
                 onClick = {
                     if (!isLastPage) {
