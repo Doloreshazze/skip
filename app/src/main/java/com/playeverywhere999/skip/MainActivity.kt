@@ -985,7 +985,7 @@ private fun FakeSettingsSlide(
             ) {
                 Text(
                     text = when (page) {
-                        0 -> stringResource(R.string.fake_settings_title_accessibility)
+                        0 -> stringResource(R.string.permission_intro_title)
                         2 -> appName
                         else -> stringResource(R.string.fake_settings_title_special)
                     },
@@ -1018,9 +1018,9 @@ private fun FakeSettingsSlide(
                         ) {
                             Text(
                                 text = if (switchProgress.value < 0.55f) {
-                                    stringResource(R.string.fake_settings_state_off)
+                                    stringResource(R.string.state_sound_off)
                                 } else {
-                                    stringResource(R.string.fake_settings_state_on)
+                                    stringResource(R.string.state_sound_on)
                                 },
                                 style = MaterialTheme.typography.titleMedium,
                                 color = Color(0xFF183A66),

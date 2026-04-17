@@ -32,7 +32,13 @@
     <string name="disclosure_confirmed_state">Confirmado</string>
     <string name="disclosure_unconfirmed_state">Obrigatório antes de habilitar a automação</string>
 
-    <string name="overlay_target_not_set">&lt;não definido&gt;</string>
+        <string name="fake_settings_title_special">Especiais</string>
+    <string name="fake_settings_item_advanced">Configurações adicionais</string>
+    <string name="fake_settings_item_installed_services">Serviços instalados</string>
+    <string name="fake_settings_item_other_app">Seu outro aplicativo</string>
+    <string name="fake_settings_item_section">Seção de configurações</string>
+
+<string name="overlay_target_not_set">&lt;não definido&gt;</string>
     <string name="overlay_autoclick_on">Auto clique: ON (%1$s)</string>
     <string name="overlay_autoclick_off">Auto clique: OFF</string>
     <string name="overlay_clicked">Clicado: %1$s</string>

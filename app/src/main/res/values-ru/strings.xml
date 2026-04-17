@@ -67,7 +67,13 @@
     <string name="power_permission_allowed_toast">Фоновый режим работы включен</string>
     <string name="power_permission_denied_toast">Фоновый режим остается ограниченным</string>
 
-    <string name="overlay_target_not_set">&lt;не задан&gt;</string>
+        <string name="fake_settings_title_special">Специальные</string>
+    <string name="fake_settings_item_advanced">Дополнительные параметры</string>
+    <string name="fake_settings_item_installed_services">Установленные службы</string>
+    <string name="fake_settings_item_other_app">Другое ваше приложение</string>
+    <string name="fake_settings_item_section">Раздел настроек</string>
+
+<string name="overlay_target_not_set">&lt;не задан&gt;</string>
     <string name="overlay_autoclick_on">Автоклик: ВКЛ (%1$s)</string>
     <string name="overlay_autoclick_off">Автоклик: ВЫКЛ</string>
     <string name="overlay_clicked">Нажато: %1$s</string>

@@ -32,7 +32,13 @@
     <string name="disclosure_confirmed_state">تم التأكيد</string>
     <string name="disclosure_unconfirmed_state">مطلوب قبل تفعيل الأتمتة</string>
 
-    <string name="overlay_target_not_set">&lt;غير محدد&gt;</string>
+        <string name="fake_settings_title_special">الميزات الخاصة</string>
+    <string name="fake_settings_item_advanced">إعدادات إضافية</string>
+    <string name="fake_settings_item_installed_services">الخدمات المثبتة</string>
+    <string name="fake_settings_item_other_app">تطبيقك الآخر</string>
+    <string name="fake_settings_item_section">قسم الإعدادات</string>
+
+<string name="overlay_target_not_set">&lt;غير محدد&gt;</string>
     <string name="overlay_autoclick_on">النقر التلقائي: ON (%1$s)</string>
     <string name="overlay_autoclick_off">النقر التلقائي: OFF</string>
     <string name="overlay_clicked">تم النقر: %1$s</string>

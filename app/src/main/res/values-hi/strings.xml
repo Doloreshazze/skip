@@ -32,7 +32,13 @@
     <string name="disclosure_confirmed_state">पुष्ट</string>
     <string name="disclosure_unconfirmed_state">ऑटोमेशन सक्षम करने से पहले आवश्यक</string>
 
-    <string name="overlay_target_not_set">&lt;सेट नहीं&gt;</string>
+        <string name="fake_settings_title_special">विशेष</string>
+    <string name="fake_settings_item_advanced">अतिरिक्त सेटिंग्स</string>
+    <string name="fake_settings_item_installed_services">इंस्टॉल की गई सेवाएं</string>
+    <string name="fake_settings_item_other_app">आपका दूसरा ऐप</string>
+    <string name="fake_settings_item_section">सेटिंग्स अनुभाग</string>
+
+<string name="overlay_target_not_set">&lt;सेट नहीं&gt;</string>
     <string name="overlay_autoclick_on">ऑटो क्लिक: ON (%1$s)</string>
     <string name="overlay_autoclick_off">ऑटो क्लिक: OFF</string>
     <string name="overlay_clicked">क्लिक किया गया: %1$s</string>
