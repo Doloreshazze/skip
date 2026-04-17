@@ -679,7 +679,11 @@ private fun PermissionInstructionFirstPage(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = if (privacyExpanded) "▲" else "▼",
+                        text = if (privacyExpanded) {
+                            stringResource(R.string.permission_intro_privacy_collapse_icon)
+                        } else {
+                            stringResource(R.string.permission_intro_privacy_expand_icon)
+                        },
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -820,7 +824,7 @@ private fun AllowInstructionOverlay(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "✕",
+                        text = stringResource(R.string.permission_overlay_close_icon),
                         color = Color(0xFFA9B0C3),
                         style = MaterialTheme.typography.headlineMedium,
                         modifier = Modifier.clickable(onClick = onClose)
@@ -927,7 +931,11 @@ private fun OverlayStepLine(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = if (active) "▶" else " ",
+            text = if (active) {
+                stringResource(R.string.permission_overlay_active_step_icon)
+            } else {
+                stringResource(R.string.permission_overlay_inactive_step_icon)
+            },
             color = if (active) Color(0xFFFFD60A) else Color.Transparent,
             fontWeight = FontWeight.Bold
         )
@@ -977,9 +985,9 @@ private fun FakeSettingsSlide(
             ) {
                 Text(
                     text = when (page) {
-                        0 -> "Специальные возможности"
+                        0 -> stringResource(R.string.permission_intro_title)
                         2 -> appName
-                        else -> "Специальные"
+                        else -> stringResource(R.string.fake_settings_title_special)
                     },
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.titleMedium
@@ -1009,7 +1017,11 @@ private fun FakeSettingsSlide(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = if (switchProgress.value < 0.55f) "Выключено" else "Включено",
+                                text = if (switchProgress.value < 0.55f) {
+                                    stringResource(R.string.state_sound_off)
+                                } else {
+                                    stringResource(R.string.state_sound_on)
+                                },
                                 style = MaterialTheme.typography.titleMedium,
                                 color = Color(0xFF183A66),
                                 fontWeight = FontWeight.SemiBold
@@ -1036,9 +1048,15 @@ private fun FakeSettingsSlide(
                     }
                 } else {
                     val menuItems = when (page) {
-                        0 -> listOf("Дополнительные параметры", "Установленные службы")
-                        1 -> listOf(appName, "Другое ваше приложение")
-                        else -> listOf("Раздел настроек")
+                        0 -> listOf(
+                            stringResource(R.string.fake_settings_item_advanced),
+                            stringResource(R.string.fake_settings_item_installed_services)
+                        )
+                        1 -> listOf(
+                            appName,
+                            stringResource(R.string.fake_settings_item_other_app)
+                        )
+                        else -> listOf(stringResource(R.string.fake_settings_item_section))
                     }
                     menuItems.forEachIndexed { row, menuItem ->
                         val isHighlighted = (page == 0 && row == 1) || (page == 1 && row == 0)

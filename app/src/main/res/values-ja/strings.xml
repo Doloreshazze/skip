@@ -32,7 +32,13 @@
     <string name="disclosure_confirmed_state">確認済み</string>
     <string name="disclosure_unconfirmed_state">自動化を有効にする前に必須</string>
 
-    <string name="overlay_target_not_set">&lt;未設定&gt;</string>
+        <string name="fake_settings_title_special">特別</string>
+    <string name="fake_settings_item_advanced">追加設定</string>
+    <string name="fake_settings_item_installed_services">インストール済みサービス</string>
+    <string name="fake_settings_item_other_app">別のアプリ</string>
+    <string name="fake_settings_item_section">設定セクション</string>
+
+<string name="overlay_target_not_set">&lt;未設定&gt;</string>
     <string name="overlay_autoclick_on">自動タップ: ON (%1$s)</string>
     <string name="overlay_autoclick_off">自動タップ: OFF</string>
     <string name="overlay_clicked">タップ済み: %1$s</string>

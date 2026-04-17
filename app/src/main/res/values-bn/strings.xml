@@ -32,7 +32,13 @@
     <string name="disclosure_confirmed_state">নিশ্চিত</string>
     <string name="disclosure_unconfirmed_state">অটোমেশন চালুর আগে আবশ্যক</string>
 
-    <string name="overlay_target_not_set">&lt;সেট করা নেই&gt;</string>
+        <string name="fake_settings_title_special">বিশেষ</string>
+    <string name="fake_settings_item_advanced">অতিরিক্ত সেটিংস</string>
+    <string name="fake_settings_item_installed_services">ইনস্টল করা পরিষেবা</string>
+    <string name="fake_settings_item_other_app">আপনার অন্য অ্যাপ</string>
+    <string name="fake_settings_item_section">সেটিংস বিভাগ</string>
+
+<string name="overlay_target_not_set">&lt;সেট করা নেই&gt;</string>
     <string name="overlay_autoclick_on">অটো ক্লিক: ON (%1$s)</string>
     <string name="overlay_autoclick_off">অটো ক্লিক: OFF</string>
     <string name="overlay_clicked">ক্লিক হয়েছে: %1$s</string>

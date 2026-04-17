@@ -32,7 +32,13 @@
     <string name="disclosure_confirmed_state">已确认</string>
     <string name="disclosure_unconfirmed_state">启用自动化前必须确认</string>
 
-    <string name="overlay_target_not_set">&lt;未设置&gt;</string>
+        <string name="fake_settings_title_special">特殊</string>
+    <string name="fake_settings_item_advanced">其他设置</string>
+    <string name="fake_settings_item_installed_services">已安装的服务</string>
+    <string name="fake_settings_item_other_app">你的其他应用</string>
+    <string name="fake_settings_item_section">设置部分</string>
+
+<string name="overlay_target_not_set">&lt;未设置&gt;</string>
     <string name="overlay_autoclick_on">自动点击：开（%1$s）</string>
     <string name="overlay_autoclick_off">自动点击：关</string>
     <string name="overlay_clicked">已点击：%1$s</string>
