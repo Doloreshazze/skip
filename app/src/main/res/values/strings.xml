@@ -49,8 +49,22 @@
     <string name="permission_overlay_step_2">2. Find “%1$s”</string>
     <string name="permission_overlay_step_3">3. Grant permission</string>
     <string name="permission_overlay_next">Next</string>
+    <string name="permission_overlay_close_icon">✕</string>
+    <string name="permission_overlay_active_step_icon">▶</string>
+    <string name="permission_overlay_inactive_step_icon"> </string>
     <string name="permission_intro_cancel">Cancel</string>
     <string name="permission_intro_allow">Allow</string>
+    <string name="permission_intro_privacy_expand_icon">▼</string>
+    <string name="permission_intro_privacy_collapse_icon">▲</string>
+
+    <string name="fake_settings_title_accessibility">Accessibility</string>
+    <string name="fake_settings_title_special">Special</string>
+    <string name="fake_settings_state_off">Off</string>
+    <string name="fake_settings_state_on">On</string>
+    <string name="fake_settings_item_advanced">Additional settings</string>
+    <string name="fake_settings_item_installed_services">Installed services</string>
+    <string name="fake_settings_item_other_app">Your other app</string>
+    <string name="fake_settings_item_section">Settings section</string>
     <string name="power_permission_title">Grant AutoClick additional permission</string>
     <string name="power_permission_subtitle">Battery optimization &amp; autostart</string>
     <string name="power_permission_benefits_title">Grant this permission to:</string>
