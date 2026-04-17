@@ -199,7 +199,20 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     private fun clickFirstMatchingNode(rootNode: AccessibilityNodeInfo, targetText: String): Boolean {
         val stack = ArrayDeque<AccessibilityNodeInfo>()
-        stack.add(rootNode)
+
+        if (!isIgnoredTargetInputNode(rootNode)) {
+            val rootText = rootNode.text?.toString()?.trim()
+            val rootContentDescription = rootNode.contentDescription?.toString()?.trim()
+            val rootMatched = rootText.equals(targetText, ignoreCase = true) ||
+                rootContentDescription.equals(targetText, ignoreCase = true)
+            if (rootMatched) {
+                return clickNodeOrClickableParent(rootNode)
+            }
+        }
+
+        for (i in 0 until rootNode.childCount) {
+            rootNode.getChild(i)?.let(stack::addLast)
+        }
 
         while (stack.isNotEmpty()) {
             val node = stack.removeLast()
