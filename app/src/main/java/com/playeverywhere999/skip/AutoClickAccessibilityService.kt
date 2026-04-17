@@ -114,17 +114,19 @@ class AutoClickAccessibilityService : AccessibilityService() {
         }
 
         val rootNode = rootInActiveWindow ?: return
-        val matchedNode = findNodeByText(rootNode, targetText) ?: return
+        try {
+            val now = SystemClock.elapsedRealtime()
+            if (now - lastClickAt < CLICK_COOLDOWN_MS) {
+                return
+            }
 
-        val now = SystemClock.elapsedRealtime()
-        if (now - lastClickAt < CLICK_COOLDOWN_MS) {
-            return
-        }
-
-        if (performClick(matchedNode)) {
-            lastClickAt = now
-            playClickSignalIfEnabled()
-            updateOverlayText(getString(R.string.overlay_clicked, targetText))
+            if (clickFirstMatchingNode(rootNode, targetText)) {
+                lastClickAt = now
+                playClickSignalIfEnabled()
+                updateOverlayText(getString(R.string.overlay_clicked, targetText))
+            }
+        } finally {
+            rootNode.recycle()
         }
     }
 
@@ -150,64 +152,107 @@ class AutoClickAccessibilityService : AccessibilityService() {
         }
 
         val root = rootInActiveWindow ?: return
-        val packageName = root.packageName?.toString().orEmpty()
-        if (packageName !in SETTINGS_PACKAGES) {
-            stopGuidePulse()
-            return
-        }
-
-        val target = findNodeByTextContains(root, getString(R.string.app_name))
-        if (target != null) {
-            startGuidePulse()
-            target.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)
-            val bounds = Rect()
-            target.getBoundsInScreen(bounds)
-            moveOverlayNear(bounds)
-            updateOverlayText(
-                getString(
-                    R.string.guide_hint_tap_service,
-                    getString(R.string.app_name)
-                )
-            )
-            prefs.edit().putBoolean(KEY_GUIDE_REQUESTED, false).apply()
-            accessibilityGuideRequested = false
-            return
-        }
-
-        val now = SystemClock.elapsedRealtime()
-        if (now - guideLastScrollAt >= GUIDE_SCROLL_COOLDOWN_MS) {
-            val didScroll = root.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
-            if (didScroll) {
-                guideLastScrollAt = now
+        try {
+            val packageName = root.packageName?.toString().orEmpty()
+            if (packageName !in SETTINGS_PACKAGES) {
+                stopGuidePulse()
+                return
             }
+
+            val target = findNodeByTextContains(root, getString(R.string.app_name))
+            if (target != null) {
+                try {
+                    startGuidePulse()
+                    target.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)
+                    val bounds = Rect()
+                    target.getBoundsInScreen(bounds)
+                    moveOverlayNear(bounds)
+                    updateOverlayText(
+                        getString(
+                            R.string.guide_hint_tap_service,
+                            getString(R.string.app_name)
+                        )
+                    )
+                    prefs.edit().putBoolean(KEY_GUIDE_REQUESTED, false).apply()
+                    accessibilityGuideRequested = false
+                    return
+                } finally {
+                    if (target !== root) {
+                        target.recycle()
+                    }
+                }
+            }
+
+            val now = SystemClock.elapsedRealtime()
+            if (now - guideLastScrollAt >= GUIDE_SCROLL_COOLDOWN_MS) {
+                val didScroll = root.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+                if (didScroll) {
+                    guideLastScrollAt = now
+                }
+            }
+            startGuidePulse()
+            updateOverlayText(getString(R.string.guide_hint_searching))
+        } finally {
+            root.recycle()
         }
-        startGuidePulse()
-        updateOverlayText(getString(R.string.guide_hint_searching))
     }
 
-    private fun findNodeByText(node: AccessibilityNodeInfo, targetText: String): AccessibilityNodeInfo? {
-        val nodeText = node.text?.toString()?.trim()
-        val nodeContentDescription = node.contentDescription?.toString()?.trim()
+    private fun clickFirstMatchingNode(rootNode: AccessibilityNodeInfo, targetText: String): Boolean {
+        val stack = ArrayDeque<AccessibilityNodeInfo>()
+        stack.add(rootNode)
 
-        if (isIgnoredTargetInputNode(node)) {
-            return null
-        }
+        while (stack.isNotEmpty()) {
+            val node = stack.removeLast()
+            val shouldIgnore = isIgnoredTargetInputNode(node)
 
-        val matched = nodeText.equals(targetText, ignoreCase = true) ||
-            nodeContentDescription.equals(targetText, ignoreCase = true)
+            if (!shouldIgnore) {
+                val nodeText = node.text?.toString()?.trim()
+                val nodeContentDescription = node.contentDescription?.toString()?.trim()
+                val matched = nodeText.equals(targetText, ignoreCase = true) ||
+                    nodeContentDescription.equals(targetText, ignoreCase = true)
 
-        if (matched) {
-            return node
-        }
-
-        for (i in 0 until node.childCount) {
-            val child = node.getChild(i) ?: continue
-            val result = findNodeByText(child, targetText)
-            if (result != null) {
-                return result
+                if (matched) {
+                    return try {
+                        clickNodeOrClickableParent(node)
+                    } finally {
+                        recycleNodes(stack)
+                        node.recycle()
+                    }
+                }
             }
+
+            for (i in 0 until node.childCount) {
+                node.getChild(i)?.let(stack::addLast)
+            }
+            node.recycle()
         }
-        return null
+
+        return false
+    }
+
+    private fun recycleNodes(nodes: ArrayDeque<AccessibilityNodeInfo>) {
+        while (nodes.isNotEmpty()) {
+            nodes.removeLast().recycle()
+        }
+    }
+
+    private fun clickNodeOrClickableParent(node: AccessibilityNodeInfo): Boolean {
+        var current: AccessibilityNodeInfo = node
+        while (true) {
+            if (current.isClickable) {
+                val didClick = current.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                if (current !== node) {
+                    current.recycle()
+                }
+                return didClick
+            }
+
+            val parent = current.parent ?: return false
+            if (current !== node) {
+                current.recycle()
+            }
+            current = parent
+        }
     }
 
     private fun isIgnoredTargetInputNode(node: AccessibilityNodeInfo): Boolean {
@@ -220,22 +265,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private fun isLauncherNode(node: AccessibilityNodeInfo): Boolean {
         val packageName = node.packageName?.toString().orEmpty()
         return packageName in LAUNCHER_PACKAGES
-    }
-
-    private fun performClick(node: AccessibilityNodeInfo): Boolean {
-        if (node.isClickable) {
-            return node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-        }
-
-        var parent = node.parent
-        while (parent != null) {
-            if (parent.isClickable) {
-                return parent.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-            }
-            parent = parent.parent
-        }
-
-        return false
     }
 
     private fun attachOverlay() {
@@ -562,17 +591,25 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun findNodeByTextContains(node: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
-        val nodeText = node.text?.toString().orEmpty()
-        val contentDescription = node.contentDescription?.toString().orEmpty()
-        if (nodeText.contains(text, ignoreCase = true) ||
-            contentDescription.contains(text, ignoreCase = true)
-        ) {
-            return node
-        }
+        val stack = ArrayDeque<AccessibilityNodeInfo>()
         for (i in 0 until node.childCount) {
-            val child = node.getChild(i) ?: continue
-            val result = findNodeByTextContains(child, text)
-            if (result != null) return result
+            node.getChild(i)?.let(stack::addLast)
+        }
+
+        while (stack.isNotEmpty()) {
+            val current = stack.removeLast()
+            val nodeText = current.text?.toString().orEmpty()
+            val contentDescription = current.contentDescription?.toString().orEmpty()
+            if (nodeText.contains(text, ignoreCase = true) ||
+                contentDescription.contains(text, ignoreCase = true)
+            ) {
+                recycleNodes(stack)
+                return current
+            }
+            for (i in 0 until current.childCount) {
+                current.getChild(i)?.let(stack::addLast)
+            }
+            current.recycle()
         }
         return null
     }
