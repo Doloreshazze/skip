@@ -476,16 +476,27 @@ private fun AutoClickScreen() {
                 PowerPermissionDialog(
                     dontAskAgain = powerPermissionDontAskAgain,
                     onDontAskAgainChange = { powerPermissionDontAskAgain = it },
-                    onDismiss = {
+                    onDeny = {
                         showPowerPermissionDialog = false
                         AutoClickPrefs.setPowerPermissionPromptHandled(context, true)
                         AutoClickPrefs.setPowerPermissionDontAskAgain(context, powerPermissionDontAskAgain)
+                        AutoClickPrefs.setPowerPermissionAllowed(context, false)
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.power_permission_denied_toast),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     },
                     onAllow = {
                         showPowerPermissionDialog = false
                         AutoClickPrefs.setPowerPermissionPromptHandled(context, true)
                         AutoClickPrefs.setPowerPermissionDontAskAgain(context, powerPermissionDontAskAgain)
-                        openPowerAndAutostartSettings(context)
+                        AutoClickPrefs.setPowerPermissionAllowed(context, true)
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.power_permission_allowed_toast),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 )
             }
@@ -497,45 +508,30 @@ private fun AutoClickScreen() {
 private fun PowerPermissionDialog(
     dontAskAgain: Boolean,
     onDontAskAgainChange: (Boolean) -> Unit,
-    onDismiss: () -> Unit,
+    onDeny: () -> Unit,
     onAllow: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(onDismissRequest = onDeny) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF313B57))
+            shape = RoundedCornerShape(26.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFF2F3F5))
         ) {
             Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.power_permission_title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color.White,
+                    text = stringResource(R.string.power_permission_system_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color(0xFF202124),
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = stringResource(R.string.power_permission_subtitle),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color(0xFFE6E9F2)
-                )
-                Text(
-                    text = stringResource(R.string.power_permission_benefits_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "✅ ${stringResource(R.string.power_permission_benefit_1)}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color(0xFFE6E9F2)
-                )
-                Text(
-                    text = "✅ ${stringResource(R.string.power_permission_benefit_2)}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color(0xFFE6E9F2)
+                    text = stringResource(R.string.power_permission_system_body),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color(0xFF4F5358),
+                    lineHeight = MaterialTheme.typography.headlineSmall.lineHeight
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -546,37 +542,49 @@ private fun PowerPermissionDialog(
                     )
                     Text(
                         text = stringResource(R.string.power_permission_dont_ask_again),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color(0xFFE6E9F2)
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color(0xFF4F5358)
                     )
                 }
-                Button(
-                    onClick = onAllow,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF41B129),
-                        contentColor = Color.White
-                    )
+                HorizontalDivider(color = Color(0xFFDADCE0))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(62.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = stringResource(R.string.power_permission_allow),
-                        style = MaterialTheme.typography.titleLarge
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable(onClick = onDeny),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.power_permission_forbid),
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color(0xFF1A73E8),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(48.dp)
+                            .background(Color(0xFFDADCE0))
                     )
-                }
-                Button(
-                    onClick = onDismiss,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF405079),
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text(
-                        text = stringResource(R.string.power_permission_later),
-                        style = MaterialTheme.typography.titleLarge
-                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable(onClick = onAllow),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.power_permission_allow_system),
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color(0xFF1A73E8),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }
@@ -1105,55 +1113,6 @@ private fun isScreenLocked(context: android.content.Context): Boolean {
     val keyguardLocked = keyguardManager?.isKeyguardLocked == true
     val deviceLocked = keyguardManager?.isDeviceLocked == true
     return screenOff || keyguardLocked || deviceLocked
-}
-
-private fun openPowerAndAutostartSettings(context: android.content.Context) {
-    val intents = listOf(
-        Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
-        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            data = Uri.parse("package:${context.packageName}")
-        }
-    ) + listOf(
-        Intent().apply {
-            component = android.content.ComponentName(
-                "com.miui.securitycenter",
-                "com.miui.permcenter.autostart.AutoStartManagementActivity"
-            )
-        },
-        Intent().apply {
-            component = android.content.ComponentName(
-                "com.huawei.systemmanager",
-                "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
-            )
-        },
-        Intent().apply {
-            component = android.content.ComponentName(
-                "com.coloros.safecenter",
-                "com.coloros.safecenter.permission.startup.StartupAppListActivity"
-            )
-        },
-        Intent().apply {
-            component = android.content.ComponentName(
-                "com.iqoo.secure",
-                "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"
-            )
-        }
-    )
-
-    val launchIntent = intents
-        .asSequence()
-        .map { it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-        .firstOrNull { intent -> intent.resolveActivity(context.packageManager) != null }
-
-    if (launchIntent != null) {
-        context.startActivity(launchIntent)
-    } else {
-        Toast.makeText(
-            context,
-            context.getString(R.string.power_permission_no_settings_found),
-            Toast.LENGTH_SHORT
-        ).show()
-    }
 }
 
 private const val ACTION_ACCESSIBILITY_DETAILS_SETTINGS =

@@ -11,6 +11,7 @@ object AutoClickPrefs {
     private const val KEY_DISCLOSURE_ACCEPTED = "disclosure_accepted"
     private const val KEY_POWER_PERMISSION_PROMPT_HANDLED = "power_permission_prompt_handled"
     private const val KEY_POWER_PERMISSION_DONT_ASK_AGAIN = "power_permission_dont_ask_again"
+    private const val KEY_POWER_PERMISSION_ALLOWED = "power_permission_allowed"
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun targetText(context: Context): String {
@@ -95,6 +96,18 @@ object AutoClickPrefs {
         prefs(context)
             .edit()
             .putBoolean(KEY_POWER_PERMISSION_DONT_ASK_AGAIN, value)
+            .apply()
+    }
+
+    fun isPowerPermissionAllowed(context: Context): Boolean {
+        return prefs(context)
+            .getBoolean(KEY_POWER_PERMISSION_ALLOWED, false)
+    }
+
+    fun setPowerPermissionAllowed(context: Context, value: Boolean) {
+        prefs(context)
+            .edit()
+            .putBoolean(KEY_POWER_PERMISSION_ALLOWED, value)
             .apply()
     }
 }
