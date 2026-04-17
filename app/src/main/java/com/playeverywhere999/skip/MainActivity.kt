@@ -43,6 +43,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -79,6 +80,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.playeverywhere999.skip.ui.theme.SkipTheme
@@ -147,14 +149,26 @@ private fun AutoClickScreen() {
     var permissionShakePlayed by rememberSaveable { mutableStateOf(false) }
     var privacyExpanded by rememberSaveable { mutableStateOf(false) }
     var showAllowOverlay by rememberSaveable { mutableStateOf(false) }
+    var showPowerPermissionDialog by rememberSaveable { mutableStateOf(false) }
+    var powerPermissionDontAskAgain by rememberSaveable { mutableStateOf(false) }
+    var previousAccessibilityEnabled by rememberSaveable { mutableStateOf(accessibilityEnabled) }
     val permissionCardOffset = remember { Animatable(0f) }
 
     DisposableEffect(lifecycleOwner, context) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                accessibilityEnabled = AccessibilityUtils.isServiceEnabled(context)
+                val currentAccessibilityState = AccessibilityUtils.isServiceEnabled(context)
+                val justEnabledAccessibility = !previousAccessibilityEnabled && currentAccessibilityState
+                accessibilityEnabled = currentAccessibilityState
                 guideRequested = AutoClickPrefs.isAccessibilityGuideRequested(context)
                 screenLocked = isScreenLocked(context)
+                val promptHandled = AutoClickPrefs.isPowerPermissionPromptHandled(context)
+                val dontAskAgain = AutoClickPrefs.isPowerPermissionDontAskAgain(context)
+                if (justEnabledAccessibility && !promptHandled && !dontAskAgain) {
+                    powerPermissionDontAskAgain = false
+                    showPowerPermissionDialog = true
+                }
+                previousAccessibilityEnabled = currentAccessibilityState
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -456,6 +470,114 @@ private fun AutoClickScreen() {
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            if (showPowerPermissionDialog) {
+                PowerPermissionDialog(
+                    dontAskAgain = powerPermissionDontAskAgain,
+                    onDontAskAgainChange = { powerPermissionDontAskAgain = it },
+                    onDismiss = {
+                        showPowerPermissionDialog = false
+                        AutoClickPrefs.setPowerPermissionPromptHandled(context, true)
+                        AutoClickPrefs.setPowerPermissionDontAskAgain(context, powerPermissionDontAskAgain)
+                    },
+                    onAllow = {
+                        showPowerPermissionDialog = false
+                        AutoClickPrefs.setPowerPermissionPromptHandled(context, true)
+                        AutoClickPrefs.setPowerPermissionDontAskAgain(context, powerPermissionDontAskAgain)
+                        openPowerAndAutostartSettings(context)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PowerPermissionDialog(
+    dontAskAgain: Boolean,
+    onDontAskAgainChange: (Boolean) -> Unit,
+    onDismiss: () -> Unit,
+    onAllow: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF313B57))
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.power_permission_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = stringResource(R.string.power_permission_subtitle),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color(0xFFE6E9F2)
+                )
+                Text(
+                    text = stringResource(R.string.power_permission_benefits_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "✅ ${stringResource(R.string.power_permission_benefit_1)}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color(0xFFE6E9F2)
+                )
+                Text(
+                    text = "✅ ${stringResource(R.string.power_permission_benefit_2)}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color(0xFFE6E9F2)
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = dontAskAgain,
+                        onCheckedChange = onDontAskAgainChange
+                    )
+                    Text(
+                        text = stringResource(R.string.power_permission_dont_ask_again),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFFE6E9F2)
+                    )
+                }
+                Button(
+                    onClick = onAllow,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF41B129),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.power_permission_allow),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF405079),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.power_permission_later),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
             }
         }
     }
@@ -983,6 +1105,55 @@ private fun isScreenLocked(context: android.content.Context): Boolean {
     val keyguardLocked = keyguardManager?.isKeyguardLocked == true
     val deviceLocked = keyguardManager?.isDeviceLocked == true
     return screenOff || keyguardLocked || deviceLocked
+}
+
+private fun openPowerAndAutostartSettings(context: android.content.Context) {
+    val intents = listOf(
+        Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.parse("package:${context.packageName}")
+        }
+    ) + listOf(
+        Intent().apply {
+            component = android.content.ComponentName(
+                "com.miui.securitycenter",
+                "com.miui.permcenter.autostart.AutoStartManagementActivity"
+            )
+        },
+        Intent().apply {
+            component = android.content.ComponentName(
+                "com.huawei.systemmanager",
+                "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"
+            )
+        },
+        Intent().apply {
+            component = android.content.ComponentName(
+                "com.coloros.safecenter",
+                "com.coloros.safecenter.permission.startup.StartupAppListActivity"
+            )
+        },
+        Intent().apply {
+            component = android.content.ComponentName(
+                "com.iqoo.secure",
+                "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"
+            )
+        }
+    )
+
+    val launchIntent = intents
+        .asSequence()
+        .map { it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+        .firstOrNull { intent -> intent.resolveActivity(context.packageManager) != null }
+
+    if (launchIntent != null) {
+        context.startActivity(launchIntent)
+    } else {
+        Toast.makeText(
+            context,
+            context.getString(R.string.power_permission_no_settings_found),
+            Toast.LENGTH_SHORT
+        ).show()
+    }
 }
 
 private const val ACTION_ACCESSIBILITY_DETAILS_SETTINGS =
