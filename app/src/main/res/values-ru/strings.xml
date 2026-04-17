@@ -51,6 +51,21 @@
     <string name="permission_overlay_next">Следующее</string>
     <string name="permission_intro_cancel">Отмена</string>
     <string name="permission_intro_allow">Разрешить</string>
+    <string name="power_permission_title">Предоставьте Автокликеру разрешение</string>
+    <string name="power_permission_subtitle">Оптимизация батареи &amp; Автозапуск</string>
+    <string name="power_permission_benefits_title">Предоставьте это разрешение:</string>
+    <string name="power_permission_benefit_1">Больше не потребуется разрешение для доступности</string>
+    <string name="power_permission_benefit_2">Оставайтесь активными без перерывов, используя приложение</string>
+    <string name="power_permission_system_title">Прекратить оптимизацию расхода заряда?</string>
+    <string name="power_permission_system_body">Приложение Автокликер сможет работать в фоновом режиме.\nИспользование им аккумулятора ограничено не будет.</string>
+    <string name="power_permission_dont_ask_again">Больше не спрашивать</string>
+    <string name="power_permission_forbid">Запретить</string>
+    <string name="power_permission_allow_system">Разрешить</string>
+    <string name="power_permission_allow">Разрешить</string>
+    <string name="power_permission_later">Позже</string>
+    <string name="power_permission_no_settings_found">Не удалось открыть настройки питания на этом устройстве</string>
+    <string name="power_permission_allowed_toast">Фоновый режим работы включен</string>
+    <string name="power_permission_denied_toast">Фоновый режим остается ограниченным</string>
 
     <string name="overlay_target_not_set">&lt;не задан&gt;</string>
     <string name="overlay_autoclick_on">Автоклик: ВКЛ (%1$s)</string>

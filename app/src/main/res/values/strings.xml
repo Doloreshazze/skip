@@ -51,6 +51,21 @@
     <string name="permission_overlay_next">Next</string>
     <string name="permission_intro_cancel">Cancel</string>
     <string name="permission_intro_allow">Allow</string>
+    <string name="power_permission_title">Grant AutoClick additional permission</string>
+    <string name="power_permission_subtitle">Battery optimization &amp; autostart</string>
+    <string name="power_permission_benefits_title">Grant this permission to:</string>
+    <string name="power_permission_benefit_1">Avoid repeated accessibility permission requests</string>
+    <string name="power_permission_benefit_2">Keep the app active without interruptions</string>
+    <string name="power_permission_system_title">Stop battery optimization?</string>
+    <string name="power_permission_system_body">AutoClick will be able to run in the background mode.\nBattery usage by this app will not be limited.</string>
+    <string name="power_permission_dont_ask_again">Don’t ask again</string>
+    <string name="power_permission_forbid">Forbid</string>
+    <string name="power_permission_allow_system">Allow</string>
+    <string name="power_permission_allow">Allow</string>
+    <string name="power_permission_later">Later</string>
+    <string name="power_permission_no_settings_found">Could not open power settings on this device</string>
+    <string name="power_permission_allowed_toast">Background work mode enabled</string>
+    <string name="power_permission_denied_toast">Background mode remains limited</string>
 
     <string name="overlay_target_not_set">&lt;not set&gt;</string>
     <string name="overlay_autoclick_on">Auto click: ON (%1$s)</string>

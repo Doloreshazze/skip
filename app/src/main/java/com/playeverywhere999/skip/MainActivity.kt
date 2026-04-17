@@ -43,6 +43,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -79,6 +80,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.playeverywhere999.skip.ui.theme.SkipTheme
@@ -147,14 +149,31 @@ private fun AutoClickScreen() {
     var permissionShakePlayed by rememberSaveable { mutableStateOf(false) }
     var privacyExpanded by rememberSaveable { mutableStateOf(false) }
     var showAllowOverlay by rememberSaveable { mutableStateOf(false) }
+    var showPowerPermissionDialog by rememberSaveable { mutableStateOf(false) }
+    var powerPermissionDontAskAgain by rememberSaveable { mutableStateOf(false) }
+    var previousAccessibilityEnabled by rememberSaveable { mutableStateOf(accessibilityEnabled) }
     val permissionCardOffset = remember { Animatable(0f) }
 
     DisposableEffect(lifecycleOwner, context) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                accessibilityEnabled = AccessibilityUtils.isServiceEnabled(context)
-                guideRequested = AutoClickPrefs.isAccessibilityGuideRequested(context)
+                val currentAccessibilityState = AccessibilityUtils.isServiceEnabled(context)
+                val justEnabledAccessibility = !previousAccessibilityEnabled && currentAccessibilityState
+                accessibilityEnabled = currentAccessibilityState
+                val guideRequestedNow = AutoClickPrefs.isAccessibilityGuideRequested(context)
+                guideRequested = guideRequestedNow
                 screenLocked = isScreenLocked(context)
+                val promptHandled = AutoClickPrefs.isPowerPermissionPromptHandled(context)
+                val dontAskAgain = AutoClickPrefs.isPowerPermissionDontAskAgain(context)
+                val shouldShowPowerDialog = currentAccessibilityState &&
+                    !promptHandled &&
+                    !dontAskAgain &&
+                    (justEnabledAccessibility || guideRequestedNow)
+                if (shouldShowPowerDialog) {
+                    powerPermissionDontAskAgain = false
+                    showPowerPermissionDialog = true
+                }
+                previousAccessibilityEnabled = currentAccessibilityState
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -456,6 +475,122 @@ private fun AutoClickScreen() {
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            if (showPowerPermissionDialog) {
+                PowerPermissionDialog(
+                    dontAskAgain = powerPermissionDontAskAgain,
+                    onDontAskAgainChange = { powerPermissionDontAskAgain = it },
+                    onDeny = {
+                        showPowerPermissionDialog = false
+                        AutoClickPrefs.setPowerPermissionPromptHandled(context, true)
+                        AutoClickPrefs.setPowerPermissionDontAskAgain(context, powerPermissionDontAskAgain)
+                        AutoClickPrefs.setPowerPermissionAllowed(context, false)
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.power_permission_denied_toast),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    onAllow = {
+                        showPowerPermissionDialog = false
+                        AutoClickPrefs.setPowerPermissionPromptHandled(context, true)
+                        AutoClickPrefs.setPowerPermissionDontAskAgain(context, powerPermissionDontAskAgain)
+                        AutoClickPrefs.setPowerPermissionAllowed(context, true)
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.power_permission_allowed_toast),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PowerPermissionDialog(
+    dontAskAgain: Boolean,
+    onDontAskAgainChange: (Boolean) -> Unit,
+    onDeny: () -> Unit,
+    onAllow: () -> Unit
+) {
+    Dialog(onDismissRequest = onDeny) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(26.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFF2F3F5))
+        ) {
+            Column(
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.power_permission_system_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color(0xFF202124),
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = stringResource(R.string.power_permission_system_body),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color(0xFF4F5358),
+                    lineHeight = MaterialTheme.typography.headlineSmall.lineHeight
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = dontAskAgain,
+                        onCheckedChange = onDontAskAgainChange
+                    )
+                    Text(
+                        text = stringResource(R.string.power_permission_dont_ask_again),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color(0xFF4F5358)
+                    )
+                }
+                HorizontalDivider(color = Color(0xFFDADCE0))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(62.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable(onClick = onDeny),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.power_permission_forbid),
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color(0xFF1A73E8),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(48.dp)
+                            .background(Color(0xFFDADCE0))
+                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable(onClick = onAllow),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.power_permission_allow_system),
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color(0xFF1A73E8),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
             }
         }
     }
