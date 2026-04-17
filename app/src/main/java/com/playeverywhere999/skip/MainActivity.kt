@@ -415,18 +415,18 @@ private fun AutoClickScreen() {
                         .border(
                             width = 1.dp,
                             color = if (accessibilityEnabled) {
-                                Color(0xFF2E7D32).copy(alpha = 0.3f)
-                            } else {
                                 MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                            } else {
+                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f)
                             },
                             shape = RoundedCornerShape(20.dp)
                         ),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = if (accessibilityEnabled) {
-                            Color(0xFF2E7D32).copy(alpha = 0.09f)
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
                         } else {
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
                         }
                     )
                 ) {
@@ -518,27 +518,42 @@ private fun PowerPermissionDialog(
 ) {
     Dialog(onDismissRequest = onDeny) {
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(26.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFF2F3F5))
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(20.dp)
+                ),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
+            )
         ) {
             Column(
-                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(18.dp)
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
                     text = stringResource(R.string.power_permission_system_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color(0xFF202124),
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold
                 )
                 Text(
                     text = stringResource(R.string.power_permission_system_body),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color(0xFF4F5358),
-                    lineHeight = MaterialTheme.typography.headlineSmall.lineHeight
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
                 )
                 Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(
@@ -547,47 +562,42 @@ private fun PowerPermissionDialog(
                     )
                     Text(
                         text = stringResource(R.string.power_permission_dont_ask_again),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color(0xFF4F5358)
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                HorizontalDivider(color = Color(0xFFDADCE0))
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(62.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable(onClick = onDeny),
-                        contentAlignment = Alignment.Center
+                    Button(
+                        onClick = onDeny,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
                     ) {
                         Text(
                             text = stringResource(R.string.power_permission_forbid),
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = Color(0xFF1A73E8),
-                            fontWeight = FontWeight.SemiBold
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center
                         )
                     }
-                    Box(
-                        modifier = Modifier
-                            .width(1.dp)
-                            .height(48.dp)
-                            .background(Color(0xFFDADCE0))
-                    )
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable(onClick = onAllow),
-                        contentAlignment = Alignment.Center
+                    Button(
+                        onClick = onAllow,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     ) {
                         Text(
                             text = stringResource(R.string.power_permission_allow_system),
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = Color(0xFF1A73E8),
-                            fontWeight = FontWeight.SemiBold
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
@@ -686,7 +696,7 @@ private fun PermissionInstructionFirstPage(
                     Text(
                         text = stringResource(R.string.permission_intro_privacy_policy_link),
                         style = MaterialTheme.typography.titleLarge,
-                        color = Color(0xFF2AA6FF),
+                        color = MaterialTheme.colorScheme.secondary,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable {
                             uriHandler.openUri(policyUrl)
@@ -718,8 +728,8 @@ private fun PermissionInstructionFirstPage(
                     modifier = Modifier.weight(1.7f),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF41B129),
-                        contentColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
                     Text(text = stringResource(R.string.permission_intro_allow))
@@ -888,8 +898,8 @@ private fun AllowInstructionOverlay(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF41B129),
-                    contentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
                 Text(
