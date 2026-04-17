@@ -160,11 +160,16 @@ private fun AutoClickScreen() {
                 val currentAccessibilityState = AccessibilityUtils.isServiceEnabled(context)
                 val justEnabledAccessibility = !previousAccessibilityEnabled && currentAccessibilityState
                 accessibilityEnabled = currentAccessibilityState
-                guideRequested = AutoClickPrefs.isAccessibilityGuideRequested(context)
+                val guideRequestedNow = AutoClickPrefs.isAccessibilityGuideRequested(context)
+                guideRequested = guideRequestedNow
                 screenLocked = isScreenLocked(context)
                 val promptHandled = AutoClickPrefs.isPowerPermissionPromptHandled(context)
                 val dontAskAgain = AutoClickPrefs.isPowerPermissionDontAskAgain(context)
-                if (justEnabledAccessibility && !promptHandled && !dontAskAgain) {
+                val shouldShowPowerDialog = currentAccessibilityState &&
+                    !promptHandled &&
+                    !dontAskAgain &&
+                    (justEnabledAccessibility || guideRequestedNow)
+                if (shouldShowPowerDialog) {
                     powerPermissionDontAskAgain = false
                     showPowerPermissionDialog = true
                 }
