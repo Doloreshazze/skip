@@ -156,7 +156,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
             return
         }
 
-        val target = findNodeByTextContains(root, getString(R.string.accessibility_service_name))
+        val target = findNodeByTextContains(root, getString(R.string.app_name))
         if (target != null) {
             startGuidePulse()
             target.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)
@@ -166,7 +166,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
             updateOverlayText(
                 getString(
                     R.string.guide_hint_tap_service,
-                    getString(R.string.accessibility_service_name)
+                    getString(R.string.app_name)
                 )
             )
             prefs.edit().putBoolean(KEY_GUIDE_REQUESTED, false).apply()
