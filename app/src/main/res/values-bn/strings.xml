@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Skip</string>
+    <string name="app_name">Skip 🐢</string>
     <string name="accessibility_service_name">Skip অটো ক্লিক</string>
     <string name="accessibility_service_description">ব্যবহারকারী যে অন-স্ক্রিন টেক্সট নির্বাচন করেন, অ্যাপটি শুধুমাত্র সেটিই খুঁজে ট্যাপ করে। সব প্রসেসিং ডিভাইসেই থাকে এবং যেকোনো সময় বন্ধ করা যায়।</string>
 

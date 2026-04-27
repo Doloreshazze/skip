@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Skip</string>
+    <string name="app_name">Skip 🐢</string>
     <string name="accessibility_service_name">Skip ऑटो क्लिक</string>
     <string name="accessibility_service_description">यह केवल उपयोगकर्ता द्वारा चुने गए ऑन-स्क्रीन टेक्स्ट को ढूंढकर क्लिक करता है। प्रोसेसिंग डिवाइस पर ही रहती है और कभी भी बंद की जा सकती है।</string>
 
