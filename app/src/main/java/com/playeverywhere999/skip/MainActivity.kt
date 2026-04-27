@@ -316,7 +316,7 @@ private fun AutoClickScreen() {
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         SettingToggleRow(
-                            title = stringResource(R.string.toggle_autoclick_title),
+                            title = stringResource(R.string.toggle_easy_title),
                             subtitle = if (enabled) stringResource(R.string.state_active) else stringResource(R.string.state_disabled),
                             checked = enabled,
                             enabled = disclosureAccepted,

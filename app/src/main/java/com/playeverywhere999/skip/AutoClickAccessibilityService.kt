@@ -522,11 +522,11 @@ class AutoClickAccessibilityService : AccessibilityService() {
         val statusText = custom ?: run {
             val target = targetText.ifBlank { getString(R.string.overlay_target_not_set) }
             if (!isAutoClickEnabled) {
-                getString(R.string.overlay_autoclick_off)
+                getString(R.string.overlay_easy_off)
             } else if (isPaused) {
-                getString(R.string.overlay_autoclick_off)
+                getString(R.string.overlay_easy_off)
             } else {
-                getString(R.string.overlay_autoclick_on, target)
+                getString(R.string.overlay_easy_on, target)
             }
         }
         playPauseButton?.contentDescription = statusText

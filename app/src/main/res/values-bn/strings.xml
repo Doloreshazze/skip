@@ -10,7 +10,7 @@
     <string name="section_target_title">স্ক্রিনে কী খুঁজতে হবে</string>
     <string name="target_text_label">বাটনের টেক্সট</string>
 
-    <string name="toggle_autoclick_title">অটো ক্লিক</string>
+    <string name="toggle_easy_title">অটো ক্লিক</string>
     <string name="toggle_sound_title">সাউন্ড সংকেত</string>
     <string name="state_active">সক্রিয়</string>
     <string name="state_disabled">বন্ধ</string>
@@ -39,7 +39,7 @@
     <string name="fake_settings_item_section">সেটিংস বিভাগ</string>
 
 <string name="overlay_target_not_set">&lt;সেট করা নেই&gt;</string>
-    <string name="overlay_autoclick_on">অটো ক্লিক: ON (%1$s)</string>
-    <string name="overlay_autoclick_off">অটো ক্লিক: OFF</string>
+    <string name="overlay_easy_on">অটো ক্লিক: ON (%1$s)</string>
+    <string name="overlay_easy_off">অটো ক্লিক: OFF</string>
     <string name="overlay_clicked">ক্লিক হয়েছে: %1$s</string>
 </resources>
