@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Skip</string>
+    <string name="app_name">Skip 🐢</string>
     <string name="accessibility_service_name">Skip 自动点击</string>
     <string name="accessibility_service_description">仅查找并点击用户选择的屏幕文本。处理过程保留在本机，可随时关闭。</string>
 

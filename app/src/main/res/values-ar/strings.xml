@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Skip</string>
+    <string name="app_name">Skip 🐢</string>
     <string name="accessibility_service_name">Skip النقر التلقائي</string>
     <string name="accessibility_service_description">يبحث وينقر فقط على النص الذي يحدده المستخدم على الشاشة. تتم المعالجة على الجهاز ويمكن إيقافها في أي وقت.</string>
 

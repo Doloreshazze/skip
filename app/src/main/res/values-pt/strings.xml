@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Skip</string>
+    <string name="app_name">Skip 🐢</string>
     <string name="accessibility_service_name">Skip Auto Clique</string>
     <string name="accessibility_service_description">Encontra e toca apenas no texto em tela selecionado pelo usuário. O processamento fica no dispositivo e pode ser desativado a qualquer momento.</string>
 

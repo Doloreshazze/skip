@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Skip</string>
+    <string name="app_name">Skip 🐢</string>
     <string name="accessibility_service_name">Skip 自動タップ</string>
     <string name="accessibility_service_description">ユーザーが選んだ画面上のテキストのみを探してタップします。処理は端末内で行われ、いつでも無効にできます。</string>
 
