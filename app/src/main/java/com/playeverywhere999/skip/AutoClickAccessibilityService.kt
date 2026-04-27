@@ -31,6 +31,10 @@ import android.widget.LinearLayout
 
 class AutoClickAccessibilityService : AccessibilityService() {
     private var lastClickAt = 0L
+    private var lastMissedWindowSignature = ""
+    private var lastMissedWindowAt = 0L
+    private var lastOverlayTextUpdateAt = 0L
+    private var pendingOverlayText: String? = null
     private var overlayView: View? = null
     private var overlayContainer: LinearLayout? = null
     private var playPauseButton: ImageButton? = null
@@ -48,7 +52,15 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var guidePulseStarted = false
     private var overlayDismissed = false
     private var moveModeActive = false
+    private var overlayTopOffsetPxValue = 0
+    private var closeDropBottomMarginPxValue = 0
+    private var overlayCornerRadiusPxValue = 0f
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val overlayTextUpdateRunnable = Runnable {
+        applyOverlayText(pendingOverlayText)
+        pendingOverlayText = null
+        lastOverlayTextUpdateAt = SystemClock.elapsedRealtime()
+    }
     private val moveModeTrigger = Runnable {
         moveModeActive = true
         showCloseDropTarget()
@@ -82,8 +94,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     override fun onCreate() {
         super.onCreate()
-        prefs = getSharedPreferences("auto_click_prefs", Context.MODE_PRIVATE)
+        prefs = getSharedPreferences(AutoClickPrefs.PREFS_NAME, Context.MODE_PRIVATE)
         prefs.registerOnSharedPreferenceChangeListener(prefsChangeListener)
+        cacheUiDimensions()
         reloadPrefs()
     }
 
@@ -101,7 +114,12 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        handleSettingsGuide()
+        val safeEvent = event ?: return
+        if (!isRelevantEventType(safeEvent.eventType)) return
+
+        if (accessibilityGuideRequested && isGuideEventType(safeEvent.eventType)) {
+            handleSettingsGuide()
+        }
 
         if (!isAutoClickEnabled || isPaused) {
             updateOverlayText()
@@ -119,11 +137,22 @@ class AutoClickAccessibilityService : AccessibilityService() {
             if (now - lastClickAt < CLICK_COOLDOWN_MS) {
                 return
             }
+            val signature = buildWindowSignature(rootNode)
+            if (signature == lastMissedWindowSignature &&
+                now - lastMissedWindowAt < SEARCH_MISS_COOLDOWN_MS
+            ) {
+                return
+            }
 
             if (clickFirstMatchingNode(rootNode, targetText)) {
                 lastClickAt = now
+                lastMissedWindowSignature = ""
+                lastMissedWindowAt = 0L
                 playClickSignalIfEnabled()
                 updateOverlayText(getString(R.string.overlay_clicked, targetText))
+            } else {
+                lastMissedWindowSignature = signature
+                lastMissedWindowAt = now
             }
         } finally {
             rootNode.recycle()
@@ -140,6 +169,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         }
         stopGuidePulse()
         mainHandler.removeCallbacks(moveModeTrigger)
+        mainHandler.removeCallbacks(overlayTextUpdateRunnable)
         detachOverlay()
         toneGenerator?.release()
         toneGenerator = null
@@ -519,6 +549,19 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun updateOverlayText(custom: String? = null) {
+        pendingOverlayText = custom
+        val now = SystemClock.elapsedRealtime()
+        val elapsed = now - lastOverlayTextUpdateAt
+        if (elapsed >= OVERLAY_TEXT_UPDATE_DEBOUNCE_MS) {
+            mainHandler.removeCallbacks(overlayTextUpdateRunnable)
+            overlayTextUpdateRunnable.run()
+            return
+        }
+        mainHandler.removeCallbacks(overlayTextUpdateRunnable)
+        mainHandler.postDelayed(overlayTextUpdateRunnable, OVERLAY_TEXT_UPDATE_DEBOUNCE_MS - elapsed)
+    }
+
+    private fun applyOverlayText(custom: String? = null) {
         val statusText = custom ?: run {
             val target = targetText.ifBlank { getString(R.string.overlay_target_not_set) }
             if (!isAutoClickEnabled) {
@@ -552,23 +595,32 @@ class AutoClickAccessibilityService : AccessibilityService() {
         wm.updateViewLayout(view, params)
     }
 
-    private fun topOverlayOffsetPx(): Int = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        OVERLAY_TOP_MARGIN_DP,
-        resources.displayMetrics
-    ).toInt()
+    private fun topOverlayOffsetPx(): Int {
+        if (overlayTopOffsetPxValue != 0) return overlayTopOffsetPxValue
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            OVERLAY_TOP_MARGIN_DP,
+            resources.displayMetrics
+        ).toInt()
+    }
 
-    private fun closeDropBottomMarginPx(): Int = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        CLOSE_DROP_BOTTOM_MARGIN_DP,
-        resources.displayMetrics
-    ).toInt()
+    private fun closeDropBottomMarginPx(): Int {
+        if (closeDropBottomMarginPxValue != 0) return closeDropBottomMarginPxValue
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            CLOSE_DROP_BOTTOM_MARGIN_DP,
+            resources.displayMetrics
+        ).toInt()
+    }
 
-    private fun overlayCornerRadiusPx(): Float = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        OVERLAY_CORNER_RADIUS_DP,
-        resources.displayMetrics
-    )
+    private fun overlayCornerRadiusPx(): Float {
+        if (overlayCornerRadiusPxValue != 0f) return overlayCornerRadiusPxValue
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            OVERLAY_CORNER_RADIUS_DP,
+            resources.displayMetrics
+        )
+    }
 
     private var dragStartX = 0
     private var dragStartY = 0
@@ -598,9 +650,50 @@ class AutoClickAccessibilityService : AccessibilityService() {
         if (!isAutoClickEnabled) {
             isPaused = false
         }
-        isSoundEnabled = prefs.getBoolean("sound_enabled", true)
-        targetText = prefs.getString("target_text", "").orEmpty().trim()
+        isSoundEnabled = prefs.getBoolean(AutoClickPrefs.KEY_SOUND_ENABLED, true)
+        targetText = prefs.getString(AutoClickPrefs.KEY_TARGET_TEXT, "").orEmpty().trim()
         accessibilityGuideRequested = prefs.getBoolean(KEY_GUIDE_REQUESTED, false)
+    }
+
+    private fun cacheUiDimensions() {
+        overlayTopOffsetPxValue = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            OVERLAY_TOP_MARGIN_DP,
+            resources.displayMetrics
+        ).toInt()
+        closeDropBottomMarginPxValue = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            CLOSE_DROP_BOTTOM_MARGIN_DP,
+            resources.displayMetrics
+        ).toInt()
+        overlayCornerRadiusPxValue = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            OVERLAY_CORNER_RADIUS_DP,
+            resources.displayMetrics
+        )
+    }
+
+    private fun isRelevantEventType(eventType: Int): Boolean {
+        return eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED ||
+            eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ||
+            eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED ||
+            eventType == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED
+    }
+
+    private fun isGuideEventType(eventType: Int): Boolean {
+        return eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED ||
+            eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ||
+            eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED
+    }
+
+    private fun buildWindowSignature(rootNode: AccessibilityNodeInfo): String {
+        return buildString {
+            append(rootNode.packageName?.toString().orEmpty())
+            append('|')
+            append(rootNode.className?.toString().orEmpty())
+            append('|')
+            append(rootNode.childCount)
+        }
     }
 
     private fun findNodeByTextContains(node: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
@@ -629,14 +722,16 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     companion object {
         private const val CLICK_COOLDOWN_MS = 1200L
+        private const val SEARCH_MISS_COOLDOWN_MS = 350L
         private const val BEEP_DURATION_MS = 120
         private const val TONE_VOLUME = 80
+        private const val OVERLAY_TEXT_UPDATE_DEBOUNCE_MS = 60L
         private const val GUIDE_SCROLL_COOLDOWN_MS = 700L
         private const val GUIDE_PULSE_PERIOD_MS = 900L
         private const val LONG_PRESS_TIMEOUT_MS = 450L
         private const val MOVE_THRESHOLD_PX = 12
-        private const val KEY_GUIDE_REQUESTED = "accessibility_guide_requested"
-        private const val KEY_ENABLED = "enabled"
+        private const val KEY_GUIDE_REQUESTED = AutoClickPrefs.KEY_ACCESSIBILITY_GUIDE_REQUESTED
+        private const val KEY_ENABLED = AutoClickPrefs.KEY_ENABLED
         private const val OVERLAY_TOP_MARGIN_DP = 16f
         private const val OVERLAY_CORNER_RADIUS_DP = 14f
         private const val ACTION_BUTTON_SIZE_DP = 48f

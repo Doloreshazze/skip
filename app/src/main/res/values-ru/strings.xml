@@ -49,8 +49,13 @@
     <string name="permission_overlay_step_2">2. Найдите «%1$s»</string>
     <string name="permission_overlay_step_3">3. Предоставьте разрешение</string>
     <string name="permission_overlay_next">Следующее</string>
+    <string name="permission_overlay_close_icon">✕</string>
+    <string name="permission_overlay_active_step_icon">▶</string>
+    <string name="permission_overlay_inactive_step_icon"> </string>
     <string name="permission_intro_cancel">Отмена</string>
     <string name="permission_intro_allow">Разрешить</string>
+    <string name="permission_intro_privacy_expand_icon">▼</string>
+    <string name="permission_intro_privacy_collapse_icon">▲</string>
     <string name="power_permission_title">Предоставьте Автокликеру разрешение</string>
     <string name="power_permission_subtitle">Оптимизация батареи &amp; Автозапуск</string>
     <string name="power_permission_benefits_title">Предоставьте это разрешение:</string>

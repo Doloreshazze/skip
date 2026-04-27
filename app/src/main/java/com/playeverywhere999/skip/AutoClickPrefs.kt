@@ -3,11 +3,11 @@ package com.playeverywhere999.skip
 import android.content.Context
 
 object AutoClickPrefs {
-    private const val PREFS_NAME = "auto_click_prefs"
-    private const val KEY_TARGET_TEXT = "target_text"
-    private const val KEY_ENABLED = "enabled"
-    private const val KEY_SOUND_ENABLED = "sound_enabled"
-    private const val KEY_ACCESSIBILITY_GUIDE_REQUESTED = "accessibility_guide_requested"
+    const val PREFS_NAME = "auto_click_prefs"
+    const val KEY_TARGET_TEXT = "target_text"
+    const val KEY_ENABLED = "enabled"
+    const val KEY_SOUND_ENABLED = "sound_enabled"
+    const val KEY_ACCESSIBILITY_GUIDE_REQUESTED = "accessibility_guide_requested"
     private const val KEY_DISCLOSURE_ACCEPTED = "disclosure_accepted"
     private const val KEY_POWER_PERMISSION_PROMPT_HANDLED = "power_permission_prompt_handled"
     private const val KEY_POWER_PERMISSION_DONT_ASK_AGAIN = "power_permission_dont_ask_again"
