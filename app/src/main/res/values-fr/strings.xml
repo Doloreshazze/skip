@@ -10,7 +10,7 @@
     <string name="section_target_title">Que chercher à l’écran</string>
     <string name="target_text_label">Texte du bouton</string>
 
-    <string name="toggle_autoclick_title">Auto clic</string>
+    <string name="toggle_easy_title">Auto clic</string>
     <string name="toggle_sound_title">Signal sonore</string>
     <string name="state_active">Actif</string>
     <string name="state_disabled">Désactivé</string>
@@ -39,7 +39,7 @@
     <string name="fake_settings_item_section">Section des paramètres</string>
 
 <string name="overlay_target_not_set">&lt;non défini&gt;</string>
-    <string name="overlay_autoclick_on">Auto clic : ON (%1$s)</string>
-    <string name="overlay_autoclick_off">Auto clic : OFF</string>
+    <string name="overlay_easy_on">Auto clic : ON (%1$s)</string>
+    <string name="overlay_easy_off">Auto clic : OFF</string>
     <string name="overlay_clicked">Cliqué : %1$s</string>
 </resources>

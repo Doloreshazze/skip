@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">skip autoclick 🦔</string>
+    <string name="app_name">skip easy 🦔</string>
     <string name="accessibility_service_name">Skip Auto Click</string>
     <string name="accessibility_service_description">Finds and taps only user-selected on-screen text. Processing stays on device and can be disabled anytime.</string>
 
@@ -10,7 +10,7 @@
     <string name="section_target_title">What to find on screen</string>
     <string name="target_text_label">Button text</string>
 
-    <string name="toggle_autoclick_title">Auto click</string>
+    <string name="toggle_easy_title">Auto click</string>
     <string name="toggle_sound_title">Sound signal</string>
     <string name="state_active">Active</string>
     <string name="state_disabled">Disabled</string>
@@ -79,7 +79,7 @@
     <string name="power_permission_denied_toast">Background mode remains limited</string>
 
     <string name="overlay_target_not_set">&lt;not set&gt;</string>
-    <string name="overlay_autoclick_on">Auto click: ON (%1$s)</string>
-    <string name="overlay_autoclick_off">Auto click: OFF</string>
+    <string name="overlay_easy_on">Auto click: ON (%1$s)</string>
+    <string name="overlay_easy_off">Auto click: OFF</string>
     <string name="overlay_clicked">Clicked: %1$s</string>
 </resources>

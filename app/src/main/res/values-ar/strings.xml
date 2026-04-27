@@ -10,7 +10,7 @@
     <string name="section_target_title">ما الذي يجب البحث عنه على الشاشة</string>
     <string name="target_text_label">نص الزر</string>
 
-    <string name="toggle_autoclick_title">النقر التلقائي</string>
+    <string name="toggle_easy_title">النقر التلقائي</string>
     <string name="toggle_sound_title">إشارة صوتية</string>
     <string name="state_active">نشط</string>
     <string name="state_disabled">معطل</string>
@@ -39,7 +39,7 @@
     <string name="fake_settings_item_section">قسم الإعدادات</string>
 
 <string name="overlay_target_not_set">&lt;غير محدد&gt;</string>
-    <string name="overlay_autoclick_on">النقر التلقائي: ON (%1$s)</string>
-    <string name="overlay_autoclick_off">النقر التلقائي: OFF</string>
+    <string name="overlay_easy_on">النقر التلقائي: ON (%1$s)</string>
+    <string name="overlay_easy_off">النقر التلقائي: OFF</string>
     <string name="overlay_clicked">تم النقر: %1$s</string>
 </resources>

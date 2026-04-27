@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">skip autoclick 🦔</string>
+    <string name="app_name">skip easy 🦔</string>
     <string name="accessibility_service_name">Skip Автоклик</string>
     <string name="accessibility_service_description">Ищет и нажимает только выбранный пользователем текст на экране. Обработка выполняется на устройстве и может быть отключена в любой момент.</string>
 
@@ -10,7 +10,7 @@
     <string name="section_target_title">Что искать на экране</string>
     <string name="target_text_label">Текст кнопки</string>
 
-    <string name="toggle_autoclick_title">Автоклик</string>
+    <string name="toggle_easy_title">Автоклик</string>
     <string name="toggle_sound_title">Звуковой сигнал</string>
     <string name="state_active">Активен</string>
     <string name="state_disabled">Выключен</string>
@@ -74,7 +74,7 @@
     <string name="fake_settings_item_section">Раздел настроек</string>
 
 <string name="overlay_target_not_set">&lt;не задан&gt;</string>
-    <string name="overlay_autoclick_on">Автоклик: ВКЛ (%1$s)</string>
-    <string name="overlay_autoclick_off">Автоклик: ВЫКЛ</string>
+    <string name="overlay_easy_on">Автоклик: ВКЛ (%1$s)</string>
+    <string name="overlay_easy_off">Автоклик: ВЫКЛ</string>
     <string name="overlay_clicked">Нажато: %1$s</string>
 </resources>

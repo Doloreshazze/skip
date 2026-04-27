@@ -10,7 +10,7 @@
     <string name="section_target_title">画面上で探す内容</string>
     <string name="target_text_label">ボタンの文字列</string>
 
-    <string name="toggle_autoclick_title">自動タップ</string>
+    <string name="toggle_easy_title">自動タップ</string>
     <string name="toggle_sound_title">サウンド通知</string>
     <string name="state_active">有効</string>
     <string name="state_disabled">無効</string>
@@ -39,7 +39,7 @@
     <string name="fake_settings_item_section">設定セクション</string>
 
 <string name="overlay_target_not_set">&lt;未設定&gt;</string>
-    <string name="overlay_autoclick_on">自動タップ: ON (%1$s)</string>
-    <string name="overlay_autoclick_off">自動タップ: OFF</string>
+    <string name="overlay_easy_on">自動タップ: ON (%1$s)</string>
+    <string name="overlay_easy_off">自動タップ: OFF</string>
     <string name="overlay_clicked">タップ済み: %1$s</string>
 </resources>

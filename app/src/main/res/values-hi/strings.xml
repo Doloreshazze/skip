@@ -10,7 +10,7 @@
     <string name="section_target_title">स्क्रीन पर क्या ढूँढना है</string>
     <string name="target_text_label">बटन टेक्स्ट</string>
 
-    <string name="toggle_autoclick_title">ऑटो क्लिक</string>
+    <string name="toggle_easy_title">ऑटो क्लिक</string>
     <string name="toggle_sound_title">ध्वनि संकेत</string>
     <string name="state_active">सक्रिय</string>
     <string name="state_disabled">बंद</string>
@@ -39,7 +39,7 @@
     <string name="fake_settings_item_section">सेटिंग्स अनुभाग</string>
 
 <string name="overlay_target_not_set">&lt;सेट नहीं&gt;</string>
-    <string name="overlay_autoclick_on">ऑटो क्लिक: ON (%1$s)</string>
-    <string name="overlay_autoclick_off">ऑटो क्लिक: OFF</string>
+    <string name="overlay_easy_on">ऑटो क्लिक: ON (%1$s)</string>
+    <string name="overlay_easy_off">ऑटो क्लिक: OFF</string>
     <string name="overlay_clicked">क्लिक किया गया: %1$s</string>
 </resources>
