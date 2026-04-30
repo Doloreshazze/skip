@@ -9,6 +9,7 @@
 
     <string name="section_target_title">Что искать на экране</string>
     <string name="target_text_label">Текст кнопки</string>
+    <string name="target_text_default_value">пропустить</string>
 
     <string name="toggle_easy_title">Автоклик</string>
     <string name="toggle_sound_title">Звуковой сигнал</string>

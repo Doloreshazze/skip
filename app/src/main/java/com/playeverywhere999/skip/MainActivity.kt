@@ -75,6 +75,8 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
@@ -138,7 +140,15 @@ private fun AutoClickScreen() {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    var targetText by rememberSaveable { mutableStateOf(AutoClickPrefs.targetText(context)) }
+    val localizedDefaultTargetText = stringResource(R.string.target_text_default_value)
+    val savedTargetText = remember(context) { AutoClickPrefs.targetText(context) }
+    val initialTargetFieldValue = remember(savedTargetText, localizedDefaultTargetText) {
+        val initialText = savedTargetText.ifEmpty { localizedDefaultTargetText }
+        TextFieldValue(text = initialText, selection = TextRange(0, initialText.length))
+    }
+    var targetTextField by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(initialTargetFieldValue)
+    }
     var enabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isEnabled(context)) }
     var soundEnabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isSoundEnabled(context)) }
     var disclosureAccepted by rememberSaveable { mutableStateOf(AutoClickPrefs.isDisclosureAccepted(context)) }
@@ -291,10 +301,10 @@ private fun AutoClickScreen() {
                             fontWeight = FontWeight.SemiBold
                         )
                         OutlinedTextField(
-                            value = targetText,
+                            value = targetTextField,
                             onValueChange = {
-                                targetText = it
-                                AutoClickPrefs.setTargetText(context, it)
+                                targetTextField = it
+                                AutoClickPrefs.setTargetText(context, it.text)
                             },
                             modifier = Modifier.fillMaxWidth(),
                             label = { Text(stringResource(R.string.target_text_label)) },
