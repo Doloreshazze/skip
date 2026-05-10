@@ -13,8 +13,8 @@ android {
         applicationId = "com.playeverywhere999.skip"
         minSdk = 24
         targetSdk = 36
-        versionCode = 5
-        versionName = "5"
+        versionCode = 7
+        versionName = "7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
