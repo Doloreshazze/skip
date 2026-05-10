@@ -43,6 +43,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var isPaused = false
     private var isSoundEnabled = true
     private var targetText = ""
+    private var overlayButtonStyle = "classic"
     private var accessibilityGuideRequested = false
     private var guideLastScrollAt = 0L
     private var guidePulseStarted = false
@@ -498,12 +499,16 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun updatePlayPauseIcon() {
-        val iconRes = if (isPaused) {
-            android.R.drawable.ic_media_play
-        } else {
-            android.R.drawable.ic_media_pause
-        }
+        val iconRes = resolveOverlayIcon(isPaused)
         playPauseButton?.setImageResource(iconRes)
+    }
+
+    private fun resolveOverlayIcon(paused: Boolean): Int {
+        return when (overlayButtonStyle) {
+            "filled" -> if (paused) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause
+            "alt" -> if (paused) android.R.drawable.ic_media_previous else android.R.drawable.ic_media_next
+            else -> if (paused) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause
+        }
     }
 
     private fun detachOverlay() {
@@ -601,6 +606,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         isSoundEnabled = prefs.getBoolean("sound_enabled", true)
         targetText = prefs.getString("target_text", "").orEmpty().trim()
         accessibilityGuideRequested = prefs.getBoolean(KEY_GUIDE_REQUESTED, false)
+        overlayButtonStyle = prefs.getString(KEY_OVERLAY_BUTTON_STYLE, "classic").orEmpty().ifBlank { "classic" }
     }
 
     private fun findNodeByTextContains(node: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
@@ -637,6 +643,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val MOVE_THRESHOLD_PX = 12
         private const val KEY_GUIDE_REQUESTED = "accessibility_guide_requested"
         private const val KEY_ENABLED = "enabled"
+        private const val KEY_OVERLAY_BUTTON_STYLE = "overlay_button_style"
         private const val OVERLAY_TOP_MARGIN_DP = 16f
         private const val OVERLAY_CORNER_RADIUS_DP = 14f
         private const val ACTION_BUTTON_SIZE_DP = 48f

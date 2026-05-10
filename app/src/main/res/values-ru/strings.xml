@@ -17,6 +17,10 @@
     <string name="state_disabled">Выключен</string>
     <string name="state_sound_on">Включён</string>
     <string name="state_sound_off">Отключён</string>
+    <string name="overlay_button_style_title">Стиль кнопки play/pause в оверлее</string>
+    <string name="overlay_style_classic">Классика</string>
+    <string name="overlay_style_filled">Контраст</string>
+    <string name="overlay_style_alt">Альт</string>
 
     <string name="permission_ready_title">Сервис готов к работе</string>
     <string name="permission_needed_title">Нужно включить Accessibility</string>

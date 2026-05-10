@@ -17,6 +17,10 @@
     <string name="state_disabled">Disabled</string>
     <string name="state_sound_on">On</string>
     <string name="state_sound_off">Off</string>
+    <string name="overlay_button_style_title">Overlay play/pause button style</string>
+    <string name="overlay_style_classic">Classic</string>
+    <string name="overlay_style_filled">Filled</string>
+    <string name="overlay_style_alt">Alt</string>
 
     <string name="permission_ready_title">Service is ready</string>
     <string name="permission_needed_title">Enable Accessibility</string>

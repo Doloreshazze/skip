@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -151,6 +152,7 @@ private fun AutoClickScreen() {
     }
     var enabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isEnabled(context)) }
     var soundEnabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isSoundEnabled(context)) }
+    var overlayButtonStyle by rememberSaveable { mutableStateOf(AutoClickPrefs.overlayButtonStyle(context)) }
     var disclosureAccepted by rememberSaveable { mutableStateOf(AutoClickPrefs.isDisclosureAccepted(context)) }
     var accessibilityEnabled by rememberSaveable { mutableStateOf(AccessibilityUtils.isServiceEnabled(context)) }
     var guideRequested by rememberSaveable { mutableStateOf(AutoClickPrefs.isAccessibilityGuideRequested(context)) }
@@ -355,6 +357,41 @@ private fun AutoClickScreen() {
                                 AutoClickPrefs.setSoundEnabled(context, it)
                             }
                         )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                        Text(
+                            text = stringResource(R.string.overlay_button_style_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OverlayStyleChip(
+                                title = stringResource(R.string.overlay_style_classic),
+                                selected = overlayButtonStyle == "classic",
+                                onClick = {
+                                    overlayButtonStyle = "classic"
+                                    AutoClickPrefs.setOverlayButtonStyle(context, "classic")
+                                }
+                            )
+                            OverlayStyleChip(
+                                title = stringResource(R.string.overlay_style_filled),
+                                selected = overlayButtonStyle == "filled",
+                                onClick = {
+                                    overlayButtonStyle = "filled"
+                                    AutoClickPrefs.setOverlayButtonStyle(context, "filled")
+                                }
+                            )
+                            OverlayStyleChip(
+                                title = stringResource(R.string.overlay_style_alt),
+                                selected = overlayButtonStyle == "alt",
+                                onClick = {
+                                    overlayButtonStyle = "alt"
+                                    AutoClickPrefs.setOverlayButtonStyle(context, "alt")
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -516,6 +553,24 @@ private fun AutoClickScreen() {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun RowScope.OverlayStyleChip(
+    title: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.weight(1f),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    ) {
+        Text(text = title)
     }
 }
 
