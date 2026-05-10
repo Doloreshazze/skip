@@ -655,9 +655,8 @@ private fun PowerPermissionDialog(
                     Button(
                         onClick = onDeny,
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(16.dp),
                         shape = RoundedCornerShape(14.dp),
-        colors = ButtonDefaults.buttonColors(
+                        colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             contentColor = MaterialTheme.colorScheme.onSurface
                         )
@@ -671,9 +670,8 @@ private fun PowerPermissionDialog(
                     Button(
                         onClick = onAllow,
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(16.dp),
                         shape = RoundedCornerShape(14.dp),
-        colors = ButtonDefaults.buttonColors(
+                        colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         )
@@ -803,9 +801,8 @@ private fun PermissionInstructionFirstPage(
                 Button(
                     onClick = onCancel,
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(16.dp),
                     shape = RoundedCornerShape(14.dp),
-        colors = ButtonDefaults.buttonColors(
+                    colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurface
                     )
@@ -815,9 +812,8 @@ private fun PermissionInstructionFirstPage(
                 Button(
                     onClick = onAllowClick,
                     modifier = Modifier.weight(1.7f),
-                    shape = RoundedCornerShape(16.dp),
                     shape = RoundedCornerShape(14.dp),
-        colors = ButtonDefaults.buttonColors(
+                    colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
@@ -986,9 +982,8 @@ private fun AllowInstructionOverlay(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
                 shape = RoundedCornerShape(14.dp),
-        colors = ButtonDefaults.buttonColors(
+                colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
