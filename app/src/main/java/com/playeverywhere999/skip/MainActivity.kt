@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -80,8 +81,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
@@ -369,7 +368,7 @@ private fun AutoClickScreen() {
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             OverlayStyleChip(
-                                title = stringResource(R.string.overlay_style_classic),
+                                styleKey = "classic",
                                 selected = overlayButtonStyle == "classic",
                                 onClick = {
                                     overlayButtonStyle = "classic"
@@ -377,7 +376,7 @@ private fun AutoClickScreen() {
                                 }
                             )
                             OverlayStyleChip(
-                                title = stringResource(R.string.overlay_style_filled),
+                                styleKey = "filled",
                                 selected = overlayButtonStyle == "filled",
                                 onClick = {
                                     overlayButtonStyle = "filled"
@@ -385,7 +384,7 @@ private fun AutoClickScreen() {
                                 }
                             )
                             OverlayStyleChip(
-                                title = stringResource(R.string.overlay_style_alt),
+                                styleKey = "alt",
                                 selected = overlayButtonStyle == "alt",
                                 onClick = {
                                     overlayButtonStyle = "alt"
@@ -393,7 +392,7 @@ private fun AutoClickScreen() {
                                 }
                             )
                             OverlayStyleChip(
-                                title = stringResource(R.string.overlay_style_outlined),
+                                styleKey = "outlined",
                                 selected = overlayButtonStyle == "outlined",
                                 onClick = {
                                     overlayButtonStyle = "outlined"
@@ -567,7 +566,7 @@ private fun AutoClickScreen() {
 
 @Composable
 private fun RowScope.OverlayStyleChip(
-    title: String,
+    styleKey: String,
     selected: Boolean,
     onClick: () -> Unit
 ) {
@@ -581,13 +580,65 @@ private fun RowScope.OverlayStyleChip(
             containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
             contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
         )
+    ) { OverlayStylePreview(styleKey = styleKey) }
+}
+
+@Composable
+private fun OverlayStylePreview(styleKey: String) {
+    val accentColor = MaterialTheme.colorScheme.onSurface
+    val pauseBarColor = MaterialTheme.colorScheme.onSurfaceVariant
+    Box(
+        modifier = Modifier
+            .width(32.dp)
+            .height(20.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = title,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        when (styleKey) {
+            "alt" -> {
+                Box(
+                    modifier = Modifier
+                        .width(18.dp)
+                        .height(18.dp)
+                        .border(width = 1.dp, color = accentColor.copy(alpha = 0.45f), shape = CircleShape)
+                        .background(color = accentColor.copy(alpha = 0.30f), shape = CircleShape)
+                )
+            }
+            "outlined" -> {
+                Box(
+                    modifier = Modifier
+                        .width(18.dp)
+                        .height(18.dp)
+                        .border(width = 2.dp, color = accentColor, shape = CircleShape)
+                )
+            }
+            else -> {
+                if (styleKey == "classic") {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(20.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .width(4.dp)
+                            .height(12.dp)
+                            .background(pauseBarColor, RoundedCornerShape(2.dp))
+                    )
+                    Box(
+                        modifier = Modifier
+                            .width(4.dp)
+                            .height(12.dp)
+                            .background(pauseBarColor, RoundedCornerShape(2.dp))
+                    )
+                }
+            }
+        }
     }
 }
 
