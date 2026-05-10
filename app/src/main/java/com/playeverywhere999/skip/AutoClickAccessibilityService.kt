@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.content.res.ColorStateList
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
@@ -389,17 +390,14 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun createActionButton(iconResId: Int): ImageButton {
-        val sizePx = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            ACTION_BUTTON_SIZE_DP,
-            resources.displayMetrics
-        ).toInt()
         return ImageButton(this).apply {
             setImageResource(iconResId)
             setBackgroundColor(0x00000000)
             setColorFilter(0xFFFFFFFF.toInt())
             scaleType = ImageView.ScaleType.CENTER_INSIDE
+            val sizePx = buttonSizePxForStyle(overlayButtonStyle)
             layoutParams = LinearLayout.LayoutParams(sizePx, sizePx)
+            imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
         }
     }
 
@@ -501,15 +499,73 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private fun updatePlayPauseIcon() {
         val iconRes = resolveOverlayIcon(isPaused)
         playPauseButton?.setImageResource(iconRes)
+        applyButtonStyle()
     }
 
     private fun resolveOverlayIcon(paused: Boolean): Int {
         return when (overlayButtonStyle) {
             "filled" -> if (paused) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause
-            "alt" -> if (paused) android.R.drawable.ic_media_previous else android.R.drawable.ic_media_next
+            "alt" -> android.R.drawable.presence_online
+            "outlined" -> if (paused) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause
             else -> if (paused) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause
         }
     }
+
+    private fun applyButtonStyle() {
+        val button = playPauseButton ?: return
+        val sizePx = buttonSizePxForStyle(overlayButtonStyle)
+        button.layoutParams = (button.layoutParams as LinearLayout.LayoutParams).apply {
+            width = sizePx
+            height = sizePx
+        }
+        button.background = null
+        button.setBackgroundColor(0x00000000)
+        button.imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
+
+        when (overlayButtonStyle) {
+            "alt" -> {
+                val fillColor = if (isPaused) 0xFFFFC107.toInt() else 0xFF2E7D32.toInt()
+                val circle = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(fillColor)
+                }
+                button.setImageResource(android.R.drawable.presence_online)
+                button.imageTintList = ColorStateList.valueOf(0x00FFFFFF)
+                button.background = circle
+            }
+            "outlined" -> {
+                val strokeColor = if (isPaused) 0xFFFFC107.toInt() else 0xFF2E7D32.toInt()
+                val outline = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(0x00000000)
+                    setStroke(outlinedStrokePx(), strokeColor)
+                }
+                button.background = outline
+            }
+            "filled" -> {
+                button.background = null
+            }
+            else -> {
+                button.background = null
+            }
+        }
+        button.requestLayout()
+    }
+
+    private fun buttonSizePxForStyle(style: String): Int {
+        val dp = if (style == "filled") FILLED_ACTION_BUTTON_SIZE_DP else ACTION_BUTTON_SIZE_DP
+        return TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dp,
+            resources.displayMetrics
+        ).toInt()
+    }
+
+    private fun outlinedStrokePx(): Int = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        OUTLINED_STROKE_DP,
+        resources.displayMetrics
+    ).toInt()
 
     private fun detachOverlay() {
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
@@ -647,6 +703,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val OVERLAY_TOP_MARGIN_DP = 16f
         private const val OVERLAY_CORNER_RADIUS_DP = 14f
         private const val ACTION_BUTTON_SIZE_DP = 48f
+        private const val FILLED_ACTION_BUTTON_SIZE_DP = 36f
+        private const val OUTLINED_STROKE_DP = 1.5f
         private const val CLOSE_DROP_BOTTOM_MARGIN_DP = 28f
         private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
         private val LAUNCHER_PACKAGES = setOf(

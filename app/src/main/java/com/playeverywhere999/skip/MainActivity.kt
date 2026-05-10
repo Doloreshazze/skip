@@ -391,6 +391,14 @@ private fun AutoClickScreen() {
                                     AutoClickPrefs.setOverlayButtonStyle(context, "alt")
                                 }
                             )
+                            OverlayStyleChip(
+                                title = stringResource(R.string.overlay_style_outlined),
+                                selected = overlayButtonStyle == "outlined",
+                                onClick = {
+                                    overlayButtonStyle = "outlined"
+                                    AutoClickPrefs.setOverlayButtonStyle(context, "outlined")
+                                }
+                            )
                         }
                     }
                 }

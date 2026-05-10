@@ -21,6 +21,7 @@
     <string name="overlay_style_classic">Classic</string>
     <string name="overlay_style_filled">Filled</string>
     <string name="overlay_style_alt">Alt</string>
+    <string name="overlay_style_outlined">Outline</string>
 
     <string name="permission_ready_title">Service is ready</string>
     <string name="permission_needed_title">Enable Accessibility</string>

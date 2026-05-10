@@ -21,6 +21,7 @@
     <string name="overlay_style_classic">Классика</string>
     <string name="overlay_style_filled">Контраст</string>
     <string name="overlay_style_alt">Альт</string>
+    <string name="overlay_style_outlined">Контур</string>
 
     <string name="permission_ready_title">Сервис готов к работе</string>
     <string name="permission_needed_title">Нужно включить Accessibility</string>
