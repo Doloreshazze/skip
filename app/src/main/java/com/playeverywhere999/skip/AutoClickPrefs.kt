@@ -12,6 +12,7 @@ object AutoClickPrefs {
     private const val KEY_POWER_PERMISSION_PROMPT_HANDLED = "power_permission_prompt_handled"
     private const val KEY_POWER_PERMISSION_DONT_ASK_AGAIN = "power_permission_dont_ask_again"
     private const val KEY_POWER_PERMISSION_ALLOWED = "power_permission_allowed"
+    private const val KEY_OVERLAY_BUTTON_STYLE = "overlay_button_style"
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun targetText(context: Context): String {
@@ -108,6 +109,20 @@ object AutoClickPrefs {
         prefs(context)
             .edit()
             .putBoolean(KEY_POWER_PERMISSION_ALLOWED, value)
+            .apply()
+    }
+
+    fun overlayButtonStyle(context: Context): String {
+        return prefs(context)
+            .getString(KEY_OVERLAY_BUTTON_STYLE, "classic")
+            .orEmpty()
+            .ifBlank { "classic" }
+    }
+
+    fun setOverlayButtonStyle(context: Context, value: String) {
+        prefs(context)
+            .edit()
+            .putString(KEY_OVERLAY_BUTTON_STYLE, value)
             .apply()
     }
 }
