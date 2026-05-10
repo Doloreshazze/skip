@@ -500,6 +500,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         val iconRes = resolveOverlayIcon(isPaused)
         playPauseButton?.setImageResource(iconRes)
         applyButtonStyle()
+        updateOverlayContainerStyle()
     }
 
     private fun resolveOverlayIcon(paused: Boolean): Int {
@@ -551,6 +552,17 @@ class AutoClickAccessibilityService : AccessibilityService() {
             }
         }
         button.requestLayout()
+    }
+
+    private fun updateOverlayContainerStyle() {
+        val container = overlayContainer ?: return
+        val background = container.background as? GradientDrawable ?: return
+        val color = when (overlayButtonStyle) {
+            "alt", "outlined" -> 0x00000000
+            "filled" -> 0x44000000
+            else -> 0xAA000000.toInt()
+        }
+        background.setColor(color)
     }
 
     private fun buttonSizePxForStyle(style: String): Int {
