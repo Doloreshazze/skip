@@ -527,7 +527,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
                 val fillColor = if (isPaused) 0xFFFFC107.toInt() else 0xFF2E7D32.toInt()
                 val circle = GradientDrawable().apply {
                     shape = GradientDrawable.OVAL
-                    setColor(fillColor)
+                    setColor((fillColor and 0x00FFFFFF) or (0x55 shl 24))
                 }
                 button.setImageResource(android.R.drawable.presence_online)
                 button.imageTintList = ColorStateList.valueOf(0x00FFFFFF)
@@ -540,6 +540,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
                     setColor(0x00000000)
                     setStroke(outlinedStrokePx(), strokeColor)
                 }
+                button.setImageDrawable(null)
                 button.background = outline
             }
             "filled" -> {
@@ -553,7 +554,12 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun buttonSizePxForStyle(style: String): Int {
-        val dp = if (style == "filled") FILLED_ACTION_BUTTON_SIZE_DP else ACTION_BUTTON_SIZE_DP
+        val dp = when (style) {
+            "filled" -> FILLED_ACTION_BUTTON_SIZE_DP
+            "alt" -> ALT_ACTION_BUTTON_SIZE_DP
+            "outlined" -> OUTLINED_ACTION_BUTTON_SIZE_DP
+            else -> ACTION_BUTTON_SIZE_DP
+        }
         return TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
             dp,
@@ -703,7 +709,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val OVERLAY_TOP_MARGIN_DP = 16f
         private const val OVERLAY_CORNER_RADIUS_DP = 14f
         private const val ACTION_BUTTON_SIZE_DP = 48f
-        private const val FILLED_ACTION_BUTTON_SIZE_DP = 36f
+        private const val FILLED_ACTION_BUTTON_SIZE_DP = 42f
+        private const val ALT_ACTION_BUTTON_SIZE_DP = 34f
+        private const val OUTLINED_ACTION_BUTTON_SIZE_DP = 34f
         private const val OUTLINED_STROKE_DP = 1.5f
         private const val CLOSE_DROP_BOTTOM_MARGIN_DP = 28f
         private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
