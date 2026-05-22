@@ -51,10 +51,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var overlayDismissed = false
     private var moveModeActive = false
     private val mainHandler = Handler(Looper.getMainLooper())
-    private val moveModeTrigger = Runnable {
-        moveModeActive = true
-        showCloseDropTarget()
-    }
     private val guidePulseCallback = object : Choreographer.FrameCallback {
         override fun doFrame(frameTimeNanos: Long) {
             if (!guidePulseStarted) return
@@ -141,7 +137,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
             prefs.unregisterOnSharedPreferenceChangeListener(prefsChangeListener)
         }
         stopGuidePulse()
-        mainHandler.removeCallbacks(moveModeTrigger)
         detachOverlay()
         toneGenerator?.release()
         toneGenerator = null
@@ -321,7 +316,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
                     touchStartRawX = event.rawX
                     touchStartRawY = event.rawY
                     moveModeActive = false
-                    mainHandler.postDelayed(moveModeTrigger, LONG_PRESS_TIMEOUT_MS)
                     true
                 }
 
@@ -329,10 +323,11 @@ class AutoClickAccessibilityService : AccessibilityService() {
                     if (!moveModeActive) {
                         val movedEnough = kotlin.math.abs(event.rawX - touchStartRawX) > MOVE_THRESHOLD_PX ||
                             kotlin.math.abs(event.rawY - touchStartRawY) > MOVE_THRESHOLD_PX
-                        if (movedEnough) {
-                            mainHandler.removeCallbacks(moveModeTrigger)
+                        if (!movedEnough) {
+                            return@overlayTouchListener true
                         }
-                        return@overlayTouchListener true
+                        moveModeActive = true
+                        showCloseDropTarget()
                     }
 
                     val deltaX = (event.rawX - touchStartRawX).toInt()
@@ -345,7 +340,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
                 }
 
                 MotionEvent.ACTION_UP -> {
-                    mainHandler.removeCallbacks(moveModeTrigger)
                     if (moveModeActive) {
                         if (isInsideCloseDropTarget(event.rawX, event.rawY)) {
                             dismissOverlayViews()
@@ -367,7 +361,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
                 }
 
                 MotionEvent.ACTION_CANCEL -> {
-                    mainHandler.removeCallbacks(moveModeTrigger)
                     if (moveModeActive) {
                         hideCloseDropTarget()
                     }
@@ -716,7 +709,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val TONE_VOLUME = 80
         private const val GUIDE_SCROLL_COOLDOWN_MS = 700L
         private const val GUIDE_PULSE_PERIOD_MS = 900L
-        private const val LONG_PRESS_TIMEOUT_MS = 450L
         private const val MOVE_THRESHOLD_PX = 12
         private const val KEY_GUIDE_REQUESTED = "accessibility_guide_requested"
         private const val KEY_ENABLED = "enabled"
