@@ -680,7 +680,10 @@ class AutoClickAccessibilityService : AccessibilityService() {
         isSoundEnabled = prefs.getBoolean("sound_enabled", true)
         targetText = prefs.getString("target_text", "").orEmpty().trim()
         accessibilityGuideRequested = prefs.getBoolean(KEY_GUIDE_REQUESTED, false)
-        overlayButtonStyle = prefs.getString(KEY_OVERLAY_BUTTON_STYLE, "classic").orEmpty().ifBlank { "classic" }
+        overlayButtonStyle = prefs.getString(KEY_OVERLAY_BUTTON_STYLE, "alt")
+            .orEmpty()
+            .ifBlank { "alt" }
+            .let { style -> if (style == "outlined" || style == "alt") style else "alt" }
     }
 
     private fun findNodeByTextContains(node: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {

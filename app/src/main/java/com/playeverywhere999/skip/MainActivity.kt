@@ -369,22 +369,6 @@ private fun AutoClickScreen() {
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             OverlayStyleChip(
-                                styleKey = "classic",
-                                selected = overlayButtonStyle == "classic",
-                                onClick = {
-                                    overlayButtonStyle = "classic"
-                                    AutoClickPrefs.setOverlayButtonStyle(context, "classic")
-                                }
-                            )
-                            OverlayStyleChip(
-                                styleKey = "filled",
-                                selected = overlayButtonStyle == "filled",
-                                onClick = {
-                                    overlayButtonStyle = "filled"
-                                    AutoClickPrefs.setOverlayButtonStyle(context, "filled")
-                                }
-                            )
-                            OverlayStyleChip(
                                 styleKey = "alt",
                                 selected = overlayButtonStyle == "alt",
                                 onClick = {
