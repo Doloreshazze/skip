@@ -525,13 +525,13 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
         when (overlayButtonStyle) {
             "alt" -> {
-                val fillColor = if (isPaused) 0xFFFFC107.toInt() else 0xFF2E7D32.toInt()
+                val strokeColor = if (isPaused) 0xFFFFC107.toInt() else 0xFF2E7D32.toInt()
                 val circle = GradientDrawable().apply {
                     shape = GradientDrawable.OVAL
-                    setColor((fillColor and 0x00FFFFFF) or (0x55 shl 24))
+                    setColor(0x00000000)
+                    setStroke(outlinedStrokePx().coerceAtLeast(1), strokeColor)
                 }
-                button.setImageResource(android.R.drawable.presence_online)
-                button.imageTintList = ColorStateList.valueOf(0x00FFFFFF)
+                button.setImageDrawable(null)
                 button.background = circle
             }
             "outlined" -> {

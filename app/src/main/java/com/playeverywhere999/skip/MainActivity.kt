@@ -585,7 +585,7 @@ private fun OverlayStylePreview(styleKey: String) {
                         .width(18.dp)
                         .height(18.dp)
                         .border(width = 1.dp, color = accentColor.copy(alpha = 0.45f), shape = CircleShape)
-                        .background(color = accentColor.copy(alpha = 0.30f), shape = CircleShape)
+                        
                 )
             }
             "outlined" -> {
