@@ -113,17 +113,13 @@ object AutoClickPrefs {
     }
 
     fun overlayButtonStyle(context: Context): String {
-        return prefs(context)
-            .getString(KEY_OVERLAY_BUTTON_STYLE, "alt")
-            .orEmpty()
-            .ifBlank { "alt" }
-            .let { style -> if (style == "outlined" || style == "alt") style else "alt" }
+        return "outlined"
     }
 
     fun setOverlayButtonStyle(context: Context, value: String) {
         prefs(context)
             .edit()
-            .putString(KEY_OVERLAY_BUTTON_STYLE, value)
+            .putString(KEY_OVERLAY_BUTTON_STYLE, "outlined")
             .apply()
     }
 }

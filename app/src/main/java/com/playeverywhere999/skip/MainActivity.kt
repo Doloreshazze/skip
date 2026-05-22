@@ -153,7 +153,6 @@ private fun AutoClickScreen() {
     }
     var enabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isEnabled(context)) }
     var soundEnabled by rememberSaveable { mutableStateOf(AutoClickPrefs.isSoundEnabled(context)) }
-    var overlayButtonStyle by rememberSaveable { mutableStateOf(AutoClickPrefs.overlayButtonStyle(context)) }
     var disclosureAccepted by rememberSaveable { mutableStateOf(AutoClickPrefs.isDisclosureAccepted(context)) }
     var accessibilityEnabled by rememberSaveable { mutableStateOf(AccessibilityUtils.isServiceEnabled(context)) }
     var guideRequested by rememberSaveable { mutableStateOf(AutoClickPrefs.isAccessibilityGuideRequested(context)) }
@@ -358,33 +357,6 @@ private fun AutoClickScreen() {
                                 AutoClickPrefs.setSoundEnabled(context, it)
                             }
                         )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                        Text(
-                            text = stringResource(R.string.overlay_button_style_title),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            OverlayStyleChip(
-                                styleKey = "alt",
-                                selected = overlayButtonStyle == "alt",
-                                onClick = {
-                                    overlayButtonStyle = "alt"
-                                    AutoClickPrefs.setOverlayButtonStyle(context, "alt")
-                                }
-                            )
-                            OverlayStyleChip(
-                                styleKey = "outlined",
-                                selected = overlayButtonStyle == "outlined",
-                                onClick = {
-                                    overlayButtonStyle = "outlined"
-                                    AutoClickPrefs.setOverlayButtonStyle(context, "outlined")
-                                }
-                            )
-                        }
                     }
                 }
 
@@ -544,84 +516,6 @@ private fun AutoClickScreen() {
                         ).show()
                     }
                 )
-            }
-        }
-    }
-}
-
-@Composable
-private fun RowScope.OverlayStyleChip(
-    styleKey: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier
-            .weight(1f)
-            .height(48.dp),
-        shape = RoundedCornerShape(14.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    ) { OverlayStylePreview(styleKey = styleKey) }
-}
-
-@Composable
-private fun OverlayStylePreview(styleKey: String) {
-    val accentColor = MaterialTheme.colorScheme.onSurface
-    val pauseBarColor = MaterialTheme.colorScheme.onSurfaceVariant
-    Box(
-        modifier = Modifier
-            .width(32.dp)
-            .height(20.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        when (styleKey) {
-            "alt" -> {
-                Box(
-                    modifier = Modifier
-                        .width(18.dp)
-                        .height(18.dp)
-                        .border(width = 1.dp, color = accentColor.copy(alpha = 0.45f), shape = CircleShape)
-                        
-                )
-            }
-            "outlined" -> {
-                Box(
-                    modifier = Modifier
-                        .width(18.dp)
-                        .height(18.dp)
-                        .border(width = 2.dp, color = accentColor, shape = CircleShape)
-                )
-            }
-            else -> {
-                if (styleKey == "classic") {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(20.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .width(4.dp)
-                            .height(12.dp)
-                            .background(pauseBarColor, RoundedCornerShape(2.dp))
-                    )
-                    Box(
-                        modifier = Modifier
-                            .width(4.dp)
-                            .height(12.dp)
-                            .background(pauseBarColor, RoundedCornerShape(2.dp))
-                    )
-                }
             }
         }
     }
