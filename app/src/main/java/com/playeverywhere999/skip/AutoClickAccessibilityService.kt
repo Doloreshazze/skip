@@ -200,8 +200,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
         if (!isIgnoredTargetInputNode(rootNode)) {
             val rootText = rootNode.text?.toString()?.trim()
             val rootContentDescription = rootNode.contentDescription?.toString()?.trim()
-            val rootMatched = rootText.equals(targetText, ignoreCase = true) ||
-                rootContentDescription.equals(targetText, ignoreCase = true)
+            val rootMatched = rootText?.contains(targetText, ignoreCase = true) == true ||
+                rootContentDescription?.contains(targetText, ignoreCase = true) == true
             if (rootMatched) {
                 return clickNodeOrClickableParent(rootNode)
             }
@@ -218,8 +218,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
             if (!shouldIgnore) {
                 val nodeText = node.text?.toString()?.trim()
                 val nodeContentDescription = node.contentDescription?.toString()?.trim()
-                val matched = nodeText.equals(targetText, ignoreCase = true) ||
-                    nodeContentDescription.equals(targetText, ignoreCase = true)
+                val matched = nodeText?.contains(targetText, ignoreCase = true) == true ||
+                    nodeContentDescription?.contains(targetText, ignoreCase = true) == true
 
                 if (matched) {
                     return try {
