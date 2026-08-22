@@ -151,6 +151,13 @@ private fun AutoClickScreen() {
         val initialText = savedTargetText.ifEmpty { localizedDefaultTargetText }
         TextFieldValue(text = initialText, selection = TextRange(0, initialText.length))
     }
+
+    LaunchedEffect(localizedDefaultTargetText) {
+        if (AutoClickPrefs.targetText(context).isBlank()) {
+            AutoClickPrefs.setTargetText(context, localizedDefaultTargetText)
+        }
+    }
+
     var targetTextField by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(initialTargetFieldValue)
     }
@@ -344,6 +351,13 @@ private fun AutoClickScreen() {
                                 val canEnable = !it || accessibilityEnabled
                                 enabled = canEnable && it
                                 AutoClickPrefs.setEnabled(context, enabled)
+                                if (enabled) {
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.auto_click_enabled_toast),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                                 if (it && !accessibilityEnabled) {
                                     permissionAttentionTrigger++
                                 }

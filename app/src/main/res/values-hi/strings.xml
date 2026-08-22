@@ -38,8 +38,6 @@
     <string name="fake_settings_item_other_app">आपका दूसरा ऐप</string>
     <string name="fake_settings_item_section">सेटिंग्स अनुभाग</string>
 
-<string name="overlay_target_not_set">&lt;सेट नहीं&gt;</string>
-    <string name="overlay_easy_on">ऑटो क्लिक: ON (%1$s)</string>
-    <string name="overlay_easy_off">ऑटो क्लिक: OFF</string>
-    <string name="overlay_clicked">क्लिक किया गया: %1$s</string>
+    <string name="auto_click_enabled_toast">Skip चालू है</string>
+    <string name="click_indicator_description">टैप की पुष्टि हुई</string>
 </resources>

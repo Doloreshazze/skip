@@ -38,8 +38,6 @@
     <string name="fake_settings_item_other_app">別のアプリ</string>
     <string name="fake_settings_item_section">設定セクション</string>
 
-<string name="overlay_target_not_set">&lt;未設定&gt;</string>
-    <string name="overlay_easy_on">自動タップ: ON (%1$s)</string>
-    <string name="overlay_easy_off">自動タップ: OFF</string>
-    <string name="overlay_clicked">タップ済み: %1$s</string>
+    <string name="auto_click_enabled_toast">Skip を有効にしました</string>
+    <string name="click_indicator_description">タップを確認しました</string>
 </resources>

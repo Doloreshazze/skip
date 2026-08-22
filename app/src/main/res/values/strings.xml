@@ -79,8 +79,6 @@
     <string name="power_permission_allowed_toast">Background work mode enabled</string>
     <string name="power_permission_denied_toast">Background mode remains limited</string>
 
-    <string name="overlay_target_not_set">&lt;not set&gt;</string>
-    <string name="overlay_easy_on">Auto click: ON (%1$s)</string>
-    <string name="overlay_easy_off">Auto click: OFF</string>
-    <string name="overlay_clicked">Clicked: %1$s</string>
+    <string name="auto_click_enabled_toast">Skip enabled</string>
+    <string name="click_indicator_description">Tap confirmed</string>
 </resources>

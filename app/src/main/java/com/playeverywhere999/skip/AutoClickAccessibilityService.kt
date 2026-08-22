@@ -3,12 +3,8 @@ package com.playeverywhere999.skip
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.KeyguardManager
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.content.res.ColorStateList
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
@@ -19,64 +15,29 @@ import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
 import android.util.TypedValue
-import android.view.Choreographer
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.LinearLayout
 
 class AutoClickAccessibilityService : AccessibilityService() {
     private var lastClickAt = 0L
-    private var overlayView: View? = null
-    private var overlayContainer: LinearLayout? = null
-    private var playPauseButton: ImageButton? = null
-    private var closeDropView: ImageView? = null
-    private var overlayLayoutParams: WindowManager.LayoutParams? = null
-    private var closeDropLayoutParams: WindowManager.LayoutParams? = null
+    private var clickIndicatorView: ImageView? = null
+    private var clickIndicatorLayoutParams: WindowManager.LayoutParams? = null
     private var toneGenerator: ToneGenerator? = null
     private lateinit var prefs: SharedPreferences
     private var isAutoClickEnabled = false
-    private var isPaused = false
     private var isSoundEnabled = true
     private var targetText = ""
-    private var overlayButtonStyle = "outlined"
     private var accessibilityGuideRequested = false
     private var guideLastScrollAt = 0L
-    private var guidePulseStarted = false
-    private var overlayDismissed = false
-    private var moveModeActive = false
     private val mainHandler = Handler(Looper.getMainLooper())
-    private val guidePulseCallback = object : Choreographer.FrameCallback {
-        override fun doFrame(frameTimeNanos: Long) {
-            if (!guidePulseStarted) return
-            val frameTimeMs = frameTimeNanos / 1_000_000L
-            val wave = kotlin.math.sin(frameTimeMs / GUIDE_PULSE_PERIOD_MS.toDouble() * Math.PI * 2.0)
-            overlayContainer?.alpha = (0.55f + (wave.toFloat() + 1f) * 0.18f).coerceIn(0.5f, 0.95f)
-            Choreographer.getInstance().postFrameCallback(this)
-        }
-    }
     private val prefsChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == null) return@OnSharedPreferenceChangeListener
         reloadPrefs()
-        if (key == KEY_ENABLED && isAutoClickEnabled) {
-            overlayDismissed = false
-            resetOverlayPositionToDefault()
-        }
-        updatePlayPauseIcon()
-        updateOverlayVisibility()
-        updateOverlayText()
     }
-    private val screenStateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            updateOverlayVisibility()
-        }
-    }
-    private var isScreenStateReceiverRegistered = false
 
     override fun onCreate() {
         super.onCreate()
@@ -88,55 +49,83 @@ class AutoClickAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         serviceInfo = serviceInfo.apply {
-            flags = flags or AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
+            flags = flags or
+                AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
+                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
         }
-        registerScreenStateReceiverIfNeeded()
         toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, TONE_VOLUME)
-        attachOverlay()
-        updatePlayPauseIcon()
-        updateOverlayVisibility()
-        updateOverlayText()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         handleSettingsGuide()
 
-        if (!isAutoClickEnabled || isPaused) {
-            updateOverlayText()
+        if (!isAutoClickEnabled) {
             return
         }
 
         if (targetText.isEmpty()) {
-            updateOverlayText()
             return
         }
 
-        val rootNode = rootInActiveWindow ?: return
-        try {
-            val now = SystemClock.elapsedRealtime()
-            if (now - lastClickAt < CLICK_COOLDOWN_MS) {
-                return
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastClickAt < CLICK_COOLDOWN_MS) {
+            return
+        }
+
+        val clickedBounds = clickFirstMatchingVisibleNode(targetText) ?: return
+        lastClickAt = now
+        playClickSignalIfEnabled()
+        showClickIndicator(clickedBounds)
+    }
+
+    private fun clickFirstMatchingVisibleNode(targetText: String): Rect? {
+        val visibleWindows = windows
+        var clickedBounds: Rect? = null
+        var inspectedWindowRoot = false
+
+        for (index in visibleWindows.indices) {
+            val window = visibleWindows[index]
+            try {
+                val root = window.root
+                if (root != null) {
+                    inspectedWindowRoot = true
+                    try {
+                        clickedBounds = clickFirstMatchingNode(root, targetText)
+                    } finally {
+                        root.recycle()
+                    }
+                }
+            } finally {
+                window.recycle()
             }
 
-            if (clickFirstMatchingNode(rootNode, targetText)) {
-                lastClickAt = now
-                playClickSignalIfEnabled()
-                updateOverlayText(getString(R.string.overlay_clicked, targetText))
+            if (clickedBounds != null) {
+                for (remainingIndex in index + 1 until visibleWindows.size) {
+                    visibleWindows[remainingIndex].recycle()
+                }
+                return clickedBounds
             }
-        } finally {
-            rootNode.recycle()
         }
+
+        if (!inspectedWindowRoot) {
+            val activeRoot = rootInActiveWindow ?: return null
+            return try {
+                clickFirstMatchingNode(activeRoot, targetText)
+            } finally {
+                activeRoot.recycle()
+            }
+        }
+
+        return null
     }
 
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterScreenStateReceiverIfNeeded()
         if (::prefs.isInitialized) {
             prefs.unregisterOnSharedPreferenceChangeListener(prefsChangeListener)
         }
-        stopGuidePulse()
         detachOverlay()
         toneGenerator?.release()
         toneGenerator = null
@@ -144,7 +133,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     private fun handleSettingsGuide() {
         if (!accessibilityGuideRequested) {
-            stopGuidePulse()
             return
         }
 
@@ -152,24 +140,13 @@ class AutoClickAccessibilityService : AccessibilityService() {
         try {
             val packageName = root.packageName?.toString().orEmpty()
             if (packageName !in SETTINGS_PACKAGES) {
-                stopGuidePulse()
                 return
             }
 
             val target = findNodeByTextContains(root, getString(R.string.app_name))
             if (target != null) {
                 try {
-                    startGuidePulse()
                     target.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)
-                    val bounds = Rect()
-                    target.getBoundsInScreen(bounds)
-                    moveOverlayNear(bounds)
-                    updateOverlayText(
-                        getString(
-                            R.string.guide_hint_tap_service,
-                            getString(R.string.app_name)
-                        )
-                    )
                     prefs.edit().putBoolean(KEY_GUIDE_REQUESTED, false).apply()
                     accessibilityGuideRequested = false
                     return
@@ -187,24 +164,16 @@ class AutoClickAccessibilityService : AccessibilityService() {
                     guideLastScrollAt = now
                 }
             }
-            startGuidePulse()
-            updateOverlayText(getString(R.string.guide_hint_searching))
         } finally {
             root.recycle()
         }
     }
 
-    private fun clickFirstMatchingNode(rootNode: AccessibilityNodeInfo, targetText: String): Boolean {
+    private fun clickFirstMatchingNode(rootNode: AccessibilityNodeInfo, targetText: String): Rect? {
         val stack = ArrayDeque<AccessibilityNodeInfo>()
 
-        if (!isIgnoredTargetInputNode(rootNode)) {
-            val rootText = rootNode.text?.toString()?.trim()
-            val rootContentDescription = rootNode.contentDescription?.toString()?.trim()
-            val rootMatched = rootText?.contains(targetText, ignoreCase = true) == true ||
-                rootContentDescription?.contains(targetText, ignoreCase = true) == true
-            if (rootMatched) {
-                return clickNodeOrClickableParent(rootNode)
-            }
+        if (isMatchingVisibleNode(rootNode, targetText)) {
+            clickNodeOrClickableParent(rootNode)?.let { return it }
         }
 
         for (i in 0 until rootNode.childCount) {
@@ -213,21 +182,12 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
         while (stack.isNotEmpty()) {
             val node = stack.removeLast()
-            val shouldIgnore = isIgnoredTargetInputNode(node)
-
-            if (!shouldIgnore) {
-                val nodeText = node.text?.toString()?.trim()
-                val nodeContentDescription = node.contentDescription?.toString()?.trim()
-                val matched = nodeText?.contains(targetText, ignoreCase = true) == true ||
-                    nodeContentDescription?.contains(targetText, ignoreCase = true) == true
-
-                if (matched) {
-                    return try {
-                        clickNodeOrClickableParent(node)
-                    } finally {
-                        recycleNodes(stack)
-                        node.recycle()
-                    }
+            if (isMatchingVisibleNode(node, targetText)) {
+                val clickedBounds = clickNodeOrClickableParent(node)
+                if (clickedBounds != null) {
+                    recycleNodes(stack)
+                    node.recycle()
+                    return clickedBounds
                 }
             }
 
@@ -237,7 +197,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
             node.recycle()
         }
 
-        return false
+        return null
     }
 
     private fun recycleNodes(nodes: ArrayDeque<AccessibilityNodeInfo>) {
@@ -246,23 +206,41 @@ class AutoClickAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun clickNodeOrClickableParent(node: AccessibilityNodeInfo): Boolean {
+    private fun clickNodeOrClickableParent(node: AccessibilityNodeInfo): Rect? {
         var current: AccessibilityNodeInfo = node
         while (true) {
             if (current.isClickable) {
+                val bounds = Rect()
+                current.getBoundsInScreen(bounds)
                 val didClick = current.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                 if (current !== node) {
                     current.recycle()
                 }
-                return didClick
+                return if (didClick) bounds else null
             }
 
-            val parent = current.parent ?: return false
+            val parent = current.parent ?: run {
+                if (current !== node) {
+                    current.recycle()
+                }
+                return null
+            }
             if (current !== node) {
                 current.recycle()
             }
             current = parent
         }
+    }
+
+    private fun isMatchingVisibleNode(node: AccessibilityNodeInfo, targetText: String): Boolean {
+        if (!node.isVisibleToUser || isIgnoredTargetInputNode(node)) {
+            return false
+        }
+
+        val nodeText = node.text?.toString()?.trim()
+        val contentDescription = node.contentDescription?.toString()?.trim()
+        return nodeText?.contains(targetText, ignoreCase = true) == true ||
+            contentDescription?.contains(targetText, ignoreCase = true) == true
     }
 
     private fun isIgnoredTargetInputNode(node: AccessibilityNodeInfo): Boolean {
@@ -277,191 +255,66 @@ class AutoClickAccessibilityService : AccessibilityService() {
         return packageName in LAUNCHER_PACKAGES
     }
 
-    private fun attachOverlay() {
-        if (overlayView != null) return
+    private fun showClickIndicator(bounds: Rect) {
+        if (isScreenLocked()) return
 
-        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        val playPause = createActionButton(android.R.drawable.ic_media_pause)
-        val overlayBackground = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = overlayCornerRadiusPx()
-            setColor(0xAA000000.toInt())
-        }
-        val container = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(12, 12, 12, 12)
-            background = overlayBackground
-            addView(playPause)
-        }
-
-        val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            x = 0
-            y = topOverlayOffsetPx()
-        }
-
-        val overlayTouchListener = View.OnTouchListener overlayTouchListener@{ _, event ->
-            val currentParams = overlayLayoutParams ?: return@overlayTouchListener false
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    dragStartX = currentParams.x
-                    dragStartY = currentParams.y
-                    touchStartRawX = event.rawX
-                    touchStartRawY = event.rawY
-                    moveModeActive = false
-                    true
+        mainHandler.post {
+            val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+            val sizePx = indicatorSizePx()
+            val view = clickIndicatorView ?: ImageView(this).apply {
+                setImageResource(R.drawable.ic_touch_hand)
+                setPadding(indicatorPaddingPx(), indicatorPaddingPx(), indicatorPaddingPx(), indicatorPaddingPx())
+                background = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(0xCC202124.toInt())
                 }
-
-                MotionEvent.ACTION_MOVE -> {
-                    if (!moveModeActive) {
-                        val movedEnough = kotlin.math.abs(event.rawX - touchStartRawX) > MOVE_THRESHOLD_PX ||
-                            kotlin.math.abs(event.rawY - touchStartRawY) > MOVE_THRESHOLD_PX
-                        if (!movedEnough) {
-                            return@overlayTouchListener true
-                        }
-                        moveModeActive = true
-                        showCloseDropTarget()
-                    }
-
-                    val deltaX = (event.rawX - touchStartRawX).toInt()
-                    val deltaY = (event.rawY - touchStartRawY).toInt()
-                    currentParams.x = dragStartX + deltaX
-                    currentParams.y = (dragStartY + deltaY).coerceAtLeast(0)
-                    wm.updateViewLayout(container, currentParams)
-                    updateCloseDropTargetState(event.rawX, event.rawY)
-                    true
-                }
-
-                MotionEvent.ACTION_UP -> {
-                    if (moveModeActive) {
-                        if (isInsideCloseDropTarget(event.rawX, event.rawY)) {
-                            dismissOverlayViews()
-                        } else {
-                            hideCloseDropTarget()
-                        }
-                    } else {
-                        val isTap = kotlin.math.abs(event.rawX - touchStartRawX) <= MOVE_THRESHOLD_PX &&
-                            kotlin.math.abs(event.rawY - touchStartRawY) <= MOVE_THRESHOLD_PX
-                        if (isTap) {
-                            isPaused = !isPaused
-                            updatePlayPauseIcon()
-                            updateOverlayVisibility()
-                            updateOverlayText()
-                        }
-                    }
-                    moveModeActive = false
-                    true
-                }
-
-                MotionEvent.ACTION_CANCEL -> {
-                    if (moveModeActive) {
-                        hideCloseDropTarget()
-                    }
-                    moveModeActive = false
-                    true
-                }
-
-                else -> false
+                contentDescription = getString(R.string.click_indicator_description)
+            }.also {
+                clickIndicatorView = it
             }
-        }
-        container.setOnTouchListener(overlayTouchListener)
-        playPause.setOnTouchListener(overlayTouchListener)
 
-        wm.addView(container, params)
-        overlayView = container
-        overlayContainer = container
-        playPauseButton = playPause
-        overlayLayoutParams = params
-        updateOverlayVisibility()
-    }
+            val params = clickIndicatorLayoutParams ?: WindowManager.LayoutParams(
+                sizePx,
+                sizePx,
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                PixelFormat.TRANSLUCENT
+            ).apply {
+                gravity = Gravity.TOP or Gravity.START
+            }.also {
+                clickIndicatorLayoutParams = it
+            }
 
-    private fun createActionButton(iconResId: Int): ImageButton {
-        return ImageButton(this).apply {
-            setImageResource(iconResId)
-            setBackgroundColor(0x00000000)
-            setColorFilter(0xFFFFFFFF.toInt())
-            scaleType = ImageView.ScaleType.CENTER_INSIDE
-            val sizePx = buttonSizePxForStyle(overlayButtonStyle)
-            layoutParams = LinearLayout.LayoutParams(sizePx, sizePx)
-            imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
-        }
-    }
-
-    private fun showCloseDropTarget() {
-        if (overlayDismissed) return
-        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        val dropView = closeDropView ?: ImageView(this).apply {
-            setImageResource(android.R.drawable.ic_menu_close_clear_cancel)
-            setColorFilter(0xFFFFFFFF.toInt())
-            setBackgroundColor(0xCCB00020.toInt())
-            setPadding(20, 20, 20, 20)
-        }.also {
-            closeDropView = it
-        }
-
-        val params = closeDropLayoutParams ?: WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            y = closeDropBottomMarginPx()
-        }.also {
-            closeDropLayoutParams = it
-        }
-
-        if (dropView.parent == null) {
-            wm.addView(dropView, params)
-        } else {
-            wm.updateViewLayout(dropView, params)
-        }
-        dropView.alpha = 0.75f
-        dropView.visibility = View.VISIBLE
-    }
-
-    private fun hideCloseDropTarget() {
-        closeDropView?.visibility = View.GONE
-    }
-
-    private fun updateCloseDropTargetState(rawX: Float, rawY: Float) {
-        closeDropView?.alpha = if (isInsideCloseDropTarget(rawX, rawY)) 1f else 0.75f
-    }
-
-    private fun isInsideCloseDropTarget(rawX: Float, rawY: Float): Boolean {
-        val dropView = closeDropView ?: return false
-        if (dropView.visibility != View.VISIBLE) return false
-        val location = IntArray(2)
-        dropView.getLocationOnScreen(location)
-        val left = location[0]
-        val top = location[1]
-        val right = left + dropView.width
-        val bottom = top + dropView.height
-        return rawX in left.toFloat()..right.toFloat() && rawY in top.toFloat()..bottom.toFloat()
-    }
-
-    private fun dismissOverlayViews() {
-        overlayDismissed = true
-        moveModeActive = false
-        overlayContainer?.visibility = View.GONE
-        hideCloseDropTarget()
-    }
-
-    private fun updateOverlayVisibility() {
-        val visible = isAutoClickEnabled && !overlayDismissed && !isScreenLocked()
-        overlayContainer?.visibility = if (visible) View.VISIBLE else View.GONE
-        if (!visible) {
-            hideCloseDropTarget()
+            params.x = bounds.centerX() - sizePx / 2
+            params.y = bounds.centerY() - sizePx / 2
+            if (view.parent == null) {
+                wm.addView(view, params)
+            } else {
+                wm.updateViewLayout(view, params)
+            }
+            view.visibility = View.VISIBLE
+            view.alpha = 1f
+            mainHandler.removeCallbacks(hideClickIndicator)
+            mainHandler.postDelayed(hideClickIndicator, CLICK_INDICATOR_DURATION_MS)
         }
     }
+
+    private val hideClickIndicator = Runnable {
+        clickIndicatorView?.visibility = View.GONE
+    }
+
+    private fun indicatorSizePx(): Int = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        INDICATOR_SIZE_DP,
+        resources.displayMetrics
+    ).toInt()
+
+    private fun indicatorPaddingPx(): Int = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        INDICATOR_PADDING_DP,
+        resources.displayMetrics
+    ).toInt()
 
     private fun isScreenLocked(): Boolean {
         val keyguardManager = getSystemService(KeyguardManager::class.java)
@@ -472,192 +325,15 @@ class AutoClickAccessibilityService : AccessibilityService() {
         return screenOff || keyguardLocked || deviceLocked
     }
 
-    private fun registerScreenStateReceiverIfNeeded() {
-        if (isScreenStateReceiverRegistered) return
-        val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_SCREEN_OFF)
-            addAction(Intent.ACTION_SCREEN_ON)
-            addAction(Intent.ACTION_USER_PRESENT)
-        }
-        registerReceiver(screenStateReceiver, filter)
-        isScreenStateReceiverRegistered = true
-    }
-
-    private fun unregisterScreenStateReceiverIfNeeded() {
-        if (!isScreenStateReceiverRegistered) return
-        unregisterReceiver(screenStateReceiver)
-        isScreenStateReceiverRegistered = false
-    }
-
-    private fun updatePlayPauseIcon() {
-        val iconRes = resolveOverlayIcon(isPaused)
-        playPauseButton?.setImageResource(iconRes)
-        applyButtonStyle()
-        updateOverlayContainerStyle()
-    }
-
-    private fun resolveOverlayIcon(paused: Boolean): Int {
-        return when (overlayButtonStyle) {
-            "filled" -> if (paused) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause
-            "alt" -> android.R.drawable.presence_online
-            "outlined" -> if (paused) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause
-            else -> if (paused) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause
-        }
-    }
-
-    private fun applyButtonStyle() {
-        val button = playPauseButton ?: return
-        val sizePx = buttonSizePxForStyle(overlayButtonStyle)
-        button.layoutParams = (button.layoutParams as LinearLayout.LayoutParams).apply {
-            width = sizePx
-            height = sizePx
-        }
-        button.background = null
-        button.setBackgroundColor(0x00000000)
-        button.imageTintList = ColorStateList.valueOf(0xFFFFFFFF.toInt())
-
-        when (overlayButtonStyle) {
-            "alt" -> {
-                val strokeColor = if (isPaused) 0xFFFFC107.toInt() else 0xFF2E7D32.toInt()
-                val circle = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor(0x00000000)
-                    setStroke(outlinedStrokePx().coerceAtLeast(1), strokeColor)
-                }
-                button.setImageDrawable(null)
-                button.background = circle
-            }
-            "outlined" -> {
-                val strokeColor = if (isPaused) 0xFFFFC107.toInt() else 0xFF2E7D32.toInt()
-                val outline = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor(0x00000000)
-                    setStroke(outlinedStrokePx(), strokeColor)
-                }
-                button.setImageDrawable(null)
-                button.background = outline
-            }
-            "filled" -> {
-                button.background = null
-            }
-            else -> {
-                button.background = null
-            }
-        }
-        button.requestLayout()
-    }
-
-    private fun updateOverlayContainerStyle() {
-        val container = overlayContainer ?: return
-        val background = container.background as? GradientDrawable ?: return
-        val color = when (overlayButtonStyle) {
-            "alt", "outlined" -> 0x00000000
-            "filled" -> 0x44000000
-            else -> 0xAA000000.toInt()
-        }
-        background.setColor(color)
-    }
-
-    private fun buttonSizePxForStyle(style: String): Int {
-        val dp = when (style) {
-            "filled" -> FILLED_ACTION_BUTTON_SIZE_DP
-            "alt" -> ALT_ACTION_BUTTON_SIZE_DP
-            "outlined" -> OUTLINED_ACTION_BUTTON_SIZE_DP
-            else -> ACTION_BUTTON_SIZE_DP
-        }
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp,
-            resources.displayMetrics
-        ).toInt()
-    }
-
-    private fun outlinedStrokePx(): Int = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        OUTLINED_STROKE_DP,
-        resources.displayMetrics
-    ).toInt()
-
     private fun detachOverlay() {
-        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        overlayView?.let { wm.removeView(it) }
-        closeDropView?.let { if (it.parent != null) wm.removeView(it) }
-        overlayView = null
-        overlayContainer = null
-        playPauseButton = null
-        closeDropView = null
-        overlayLayoutParams = null
-        closeDropLayoutParams = null
-    }
-
-    private fun updateOverlayText(custom: String? = null) {
-        val statusText = custom ?: run {
-            val target = targetText.ifBlank { getString(R.string.overlay_target_not_set) }
-            if (!isAutoClickEnabled) {
-                getString(R.string.overlay_easy_off)
-            } else if (isPaused) {
-                getString(R.string.overlay_easy_off)
-            } else {
-                getString(R.string.overlay_easy_on, target)
-            }
+        mainHandler.removeCallbacks(hideClickIndicator)
+        val view = clickIndicatorView
+        if (view?.parent != null) {
+            val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+            wm.removeView(view)
         }
-        playPauseButton?.contentDescription = statusText
-    }
-
-    private fun moveOverlayNear(@Suppress("UNUSED_PARAMETER") targetBounds: Rect) {
-        val view = overlayView ?: return
-        val params = overlayLayoutParams ?: return
-        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        params.gravity = Gravity.TOP or Gravity.START
-        params.x = 0
-        params.y = topOverlayOffsetPx()
-        wm.updateViewLayout(view, params)
-    }
-
-    private fun resetOverlayPositionToDefault() {
-        val view = overlayView ?: return
-        val params = overlayLayoutParams ?: return
-        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        params.gravity = Gravity.TOP or Gravity.START
-        params.x = 0
-        params.y = topOverlayOffsetPx()
-        wm.updateViewLayout(view, params)
-    }
-
-    private fun topOverlayOffsetPx(): Int = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        OVERLAY_TOP_MARGIN_DP,
-        resources.displayMetrics
-    ).toInt()
-
-    private fun closeDropBottomMarginPx(): Int = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        CLOSE_DROP_BOTTOM_MARGIN_DP,
-        resources.displayMetrics
-    ).toInt()
-
-    private fun overlayCornerRadiusPx(): Float = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        OVERLAY_CORNER_RADIUS_DP,
-        resources.displayMetrics
-    )
-
-    private var dragStartX = 0
-    private var dragStartY = 0
-    private var touchStartRawX = 0f
-    private var touchStartRawY = 0f
-
-    private fun startGuidePulse() {
-        if (guidePulseStarted) return
-        guidePulseStarted = true
-        Choreographer.getInstance().postFrameCallback(guidePulseCallback)
-    }
-
-    private fun stopGuidePulse() {
-        if (!guidePulseStarted) return
-        guidePulseStarted = false
-        Choreographer.getInstance().removeFrameCallback(guidePulseCallback)
-        overlayContainer?.alpha = 1f
+        clickIndicatorView = null
+        clickIndicatorLayoutParams = null
     }
 
     private fun playClickSignalIfEnabled() {
@@ -667,13 +343,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     private fun reloadPrefs() {
         isAutoClickEnabled = prefs.getBoolean(KEY_ENABLED, false)
-        if (!isAutoClickEnabled) {
-            isPaused = false
-        }
         isSoundEnabled = prefs.getBoolean("sound_enabled", true)
         targetText = prefs.getString("target_text", "").orEmpty().trim()
         accessibilityGuideRequested = prefs.getBoolean(KEY_GUIDE_REQUESTED, false)
-        overlayButtonStyle = "outlined"
     }
 
     private fun findNodeByTextContains(node: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
@@ -702,22 +374,14 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     companion object {
         private const val CLICK_COOLDOWN_MS = 1200L
+        private const val CLICK_INDICATOR_DURATION_MS = 1000L
         private const val BEEP_DURATION_MS = 120
         private const val TONE_VOLUME = 80
         private const val GUIDE_SCROLL_COOLDOWN_MS = 700L
-        private const val GUIDE_PULSE_PERIOD_MS = 900L
-        private const val MOVE_THRESHOLD_PX = 12
         private const val KEY_GUIDE_REQUESTED = "accessibility_guide_requested"
         private const val KEY_ENABLED = "enabled"
-        private const val KEY_OVERLAY_BUTTON_STYLE = "overlay_button_style"
-        private const val OVERLAY_TOP_MARGIN_DP = 16f
-        private const val OVERLAY_CORNER_RADIUS_DP = 14f
-        private const val ACTION_BUTTON_SIZE_DP = 48f
-        private const val FILLED_ACTION_BUTTON_SIZE_DP = 42f
-        private const val ALT_ACTION_BUTTON_SIZE_DP = 34f
-        private const val OUTLINED_ACTION_BUTTON_SIZE_DP = 34f
-        private const val OUTLINED_STROKE_DP = 1.5f
-        private const val CLOSE_DROP_BOTTOM_MARGIN_DP = 28f
+        private const val INDICATOR_SIZE_DP = 64f
+        private const val INDICATOR_PADDING_DP = 12f
         private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
         private val LAUNCHER_PACKAGES = setOf(
             "com.android.launcher3",

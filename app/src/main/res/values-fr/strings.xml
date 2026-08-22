@@ -38,8 +38,6 @@
     <string name="fake_settings_item_other_app">Votre autre application</string>
     <string name="fake_settings_item_section">Section des paramètres</string>
 
-<string name="overlay_target_not_set">&lt;non défini&gt;</string>
-    <string name="overlay_easy_on">Auto clic : ON (%1$s)</string>
-    <string name="overlay_easy_off">Auto clic : OFF</string>
-    <string name="overlay_clicked">Cliqué : %1$s</string>
+    <string name="auto_click_enabled_toast">Skip activé</string>
+    <string name="click_indicator_description">Appui confirmé</string>
 </resources>

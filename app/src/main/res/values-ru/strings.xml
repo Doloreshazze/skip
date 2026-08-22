@@ -74,8 +74,6 @@
     <string name="fake_settings_item_other_app">Другое ваше приложение</string>
     <string name="fake_settings_item_section">Раздел настроек</string>
 
-<string name="overlay_target_not_set">&lt;не задан&gt;</string>
-    <string name="overlay_easy_on">Автоклик: ВКЛ (%1$s)</string>
-    <string name="overlay_easy_off">Автоклик: ВЫКЛ</string>
-    <string name="overlay_clicked">Нажато: %1$s</string>
+    <string name="auto_click_enabled_toast">Skip включён</string>
+    <string name="click_indicator_description">Нажатие подтверждено</string>
 </resources>

@@ -38,8 +38,6 @@
     <string name="fake_settings_item_other_app">你的其他应用</string>
     <string name="fake_settings_item_section">设置部分</string>
 
-<string name="overlay_target_not_set">&lt;未设置&gt;</string>
-    <string name="overlay_easy_on">自动点击：开（%1$s）</string>
-    <string name="overlay_easy_off">自动点击：关</string>
-    <string name="overlay_clicked">已点击：%1$s</string>
+    <string name="auto_click_enabled_toast">Skip 已开启</string>
+    <string name="click_indicator_description">点击已确认</string>
 </resources>
