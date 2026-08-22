@@ -25,7 +25,7 @@ import android.widget.ImageView
 class AutoClickAccessibilityService : AccessibilityService() {
     private var lastClickAt = 0L
     private var clickIndicatorView: ImageView? = null
-    private var clickIndicatorLayoutParams: WindowManager.LayoutParams? = null
+    private var pendingShowClickIndicator: Runnable? = null
     private var toneGenerator: ToneGenerator? = null
     private lateinit var prefs: SharedPreferences
     private var isAutoClickEnabled = false
@@ -33,6 +33,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var targetText = ""
     private var accessibilityGuideRequested = false
     private var guideLastScrollAt = 0L
+    @Volatile private var isServiceDestroyed = false
     private val mainHandler = Handler(Looper.getMainLooper())
     private val prefsChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == null) return@OnSharedPreferenceChangeListener
@@ -122,6 +123,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     override fun onInterrupt() = Unit
 
     override fun onDestroy() {
+        isServiceDestroyed = true
         super.onDestroy()
         if (::prefs.isInitialized) {
             prefs.unregisterOnSharedPreferenceChangeListener(prefsChangeListener)
@@ -258,10 +260,17 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private fun showClickIndicator(bounds: Rect) {
         if (isScreenLocked()) return
 
-        mainHandler.post {
+        val indicatorBounds = Rect(bounds)
+        val showIndicator = Runnable {
+            pendingShowClickIndicator = null
+            if (isServiceDestroyed || !isAutoClickEnabled || isScreenLocked()) {
+                return@Runnable
+            }
+
             val wm = getSystemService(WINDOW_SERVICE) as WindowManager
             val sizePx = indicatorSizePx()
-            val view = clickIndicatorView ?: ImageView(this).apply {
+            removeClickIndicator()
+            val view = ImageView(this).apply {
                 setImageResource(R.drawable.ic_touch_hand)
                 setPadding(indicatorPaddingPx(), indicatorPaddingPx(), indicatorPaddingPx(), indicatorPaddingPx())
                 background = GradientDrawable().apply {
@@ -269,11 +278,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
                     setColor(0xCC202124.toInt())
                 }
                 contentDescription = getString(R.string.click_indicator_description)
-            }.also {
-                clickIndicatorView = it
             }
 
-            val params = clickIndicatorLayoutParams ?: WindowManager.LayoutParams(
+            val params = WindowManager.LayoutParams(
                 sizePx,
                 sizePx,
                 WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
@@ -282,26 +289,26 @@ class AutoClickAccessibilityService : AccessibilityService() {
                 PixelFormat.TRANSLUCENT
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
-            }.also {
-                clickIndicatorLayoutParams = it
             }
 
-            params.x = bounds.centerX() - sizePx / 2
-            params.y = bounds.centerY() - sizePx / 2
-            if (view.parent == null) {
+            params.x = indicatorBounds.centerX() - sizePx / 2
+            params.y = indicatorBounds.centerY() - sizePx / 2
+            try {
                 wm.addView(view, params)
-            } else {
-                wm.updateViewLayout(view, params)
+            } catch (_: WindowManager.BadTokenException) {
+                return@Runnable
             }
-            view.visibility = View.VISIBLE
-            view.alpha = 1f
+            clickIndicatorView = view
             mainHandler.removeCallbacks(hideClickIndicator)
             mainHandler.postDelayed(hideClickIndicator, CLICK_INDICATOR_DURATION_MS)
         }
+        pendingShowClickIndicator?.let(mainHandler::removeCallbacks)
+        pendingShowClickIndicator = showIndicator
+        mainHandler.post(showIndicator)
     }
 
     private val hideClickIndicator = Runnable {
-        clickIndicatorView?.visibility = View.GONE
+        removeClickIndicator()
     }
 
     private fun indicatorSizePx(): Int = TypedValue.applyDimension(
@@ -326,14 +333,27 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun detachOverlay() {
+        pendingShowClickIndicator?.let(mainHandler::removeCallbacks)
+        pendingShowClickIndicator = null
         mainHandler.removeCallbacks(hideClickIndicator)
+        if (Looper.myLooper() == mainHandler.looper) {
+            removeClickIndicator()
+        } else {
+            mainHandler.post(::removeClickIndicator)
+        }
+    }
+
+    private fun removeClickIndicator() {
         val view = clickIndicatorView
+        clickIndicatorView = null
         if (view?.parent != null) {
             val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-            wm.removeView(view)
+            try {
+                wm.removeViewImmediate(view)
+            } catch (_: IllegalArgumentException) {
+                // The system may already have detached an accessibility overlay.
+            }
         }
-        clickIndicatorView = null
-        clickIndicatorLayoutParams = null
     }
 
     private fun playClickSignalIfEnabled() {
@@ -343,6 +363,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     private fun reloadPrefs() {
         isAutoClickEnabled = prefs.getBoolean(KEY_ENABLED, false)
+        if (!isAutoClickEnabled) {
+            detachOverlay()
+        }
         isSoundEnabled = prefs.getBoolean("sound_enabled", true)
         targetText = prefs.getString("target_text", "").orEmpty().trim()
         accessibilityGuideRequested = prefs.getBoolean(KEY_GUIDE_REQUESTED, false)
