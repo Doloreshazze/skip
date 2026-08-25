@@ -239,10 +239,19 @@ class AutoClickAccessibilityService : AccessibilityService() {
             return false
         }
 
-        val nodeText = node.text?.toString()?.trim()
-        val contentDescription = node.contentDescription?.toString()?.trim()
-        return nodeText?.contains(targetText, ignoreCase = true) == true ||
-            contentDescription?.contains(targetText, ignoreCase = true) == true
+        return matchesTargetInShortText(node.text, targetText) ||
+            matchesTargetInShortText(node.contentDescription, targetText)
+    }
+
+    private fun matchesTargetInShortText(text: CharSequence?, targetText: String): Boolean {
+        val normalizedText = text?.toString()?.trim().orEmpty()
+        if (normalizedText.isEmpty()) {
+            return false
+        }
+
+        val wordCount = normalizedText.split(WORD_SEPARATOR).size
+        return wordCount <= MAX_TRIGGER_TEXT_WORDS &&
+            normalizedText.contains(targetText, ignoreCase = true)
     }
 
     private fun isIgnoredTargetInputNode(node: AccessibilityNodeInfo): Boolean {
@@ -405,6 +414,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val KEY_ENABLED = "enabled"
         private const val INDICATOR_SIZE_DP = 64f
         private const val INDICATOR_PADDING_DP = 12f
+        private const val MAX_TRIGGER_TEXT_WORDS = 2
+        private val WORD_SEPARATOR = Regex("\\s+")
         private val SETTINGS_PACKAGES = setOf("com.android.settings", "com.google.android.settings")
         private val LAUNCHER_PACKAGES = setOf(
             "com.android.launcher3",
