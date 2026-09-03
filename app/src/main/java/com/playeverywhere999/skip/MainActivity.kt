@@ -1,5 +1,6 @@
 package com.playeverywhere999.skip
 
+import android.Manifest
 import android.app.Activity
 import android.app.KeyguardManager
 import android.content.Intent
@@ -7,15 +8,19 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Build
 import android.os.PowerManager
+import android.content.pm.PackageManager
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.ViewCompat
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -175,6 +180,27 @@ private fun AutoClickScreen() {
     var powerPermissionDontAskAgain by rememberSaveable { mutableStateOf(false) }
     var previousAccessibilityEnabled by rememberSaveable { mutableStateOf(accessibilityEnabled) }
     val permissionCardOffset = remember { Animatable(0f) }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted && AccessibilityUtils.isServiceEnabled(context)) {
+            TriggerNotification.show(context, AutoClickPrefs.isEnabled(context))
+        }
+    }
+
+    LaunchedEffect(accessibilityEnabled, disclosureAccepted) {
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            accessibilityEnabled &&
+            disclosureAccepted &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     DisposableEffect(lifecycleOwner, context) {
         val observer = LifecycleEventObserver { _, event ->
@@ -182,6 +208,7 @@ private fun AutoClickScreen() {
                 val currentAccessibilityState = AccessibilityUtils.isServiceEnabled(context)
                 val justEnabledAccessibility = !previousAccessibilityEnabled && currentAccessibilityState
                 accessibilityEnabled = currentAccessibilityState
+                enabled = AutoClickPrefs.isEnabled(context)
                 val guideRequestedNow = AutoClickPrefs.isAccessibilityGuideRequested(context)
                 guideRequested = guideRequestedNow
                 screenLocked = isScreenLocked(context)

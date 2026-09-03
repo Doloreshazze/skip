@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trigger_notification_channel_name">Управление триггером</string>
+    <string name="trigger_notification_channel_description">Пауза и запуск триггера Skip без открытия приложения.</string>
+    <string name="trigger_notification_active_title">Триггер Skip активен</string>
+    <string name="trigger_notification_paused_title">Триггер Skip на паузе</string>
+    <string name="trigger_notification_hint">Нажмите «%1$s», чтобы изменить состояние.</string>
+    <string name="trigger_notification_pause">Пауза</string>
+    <string name="trigger_notification_resume">Возобновить</string>
+</resources>

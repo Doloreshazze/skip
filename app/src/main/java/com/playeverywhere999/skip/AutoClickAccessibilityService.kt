@@ -32,6 +32,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var isSoundEnabled = true
     private var targetText = ""
     private var accessibilityGuideRequested = false
+    private var isServiceConnected = false
     private var guideLastScrollAt = 0L
     @Volatile private var isServiceDestroyed = false
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -49,12 +50,14 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        isServiceConnected = true
         serviceInfo = serviceInfo.apply {
             flags = flags or
                 AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
                 AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
         }
         toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, TONE_VOLUME)
+        TriggerNotification.show(this, isAutoClickEnabled)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -124,6 +127,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         isServiceDestroyed = true
+        isServiceConnected = false
         super.onDestroy()
         if (::prefs.isInitialized) {
             prefs.unregisterOnSharedPreferenceChangeListener(prefsChangeListener)
@@ -131,6 +135,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         detachOverlay()
         toneGenerator?.release()
         toneGenerator = null
+        TriggerNotification.cancel(this)
     }
 
     private fun handleSettingsGuide() {
@@ -378,6 +383,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
         isSoundEnabled = prefs.getBoolean("sound_enabled", true)
         targetText = prefs.getString("target_text", "").orEmpty().trim()
         accessibilityGuideRequested = prefs.getBoolean(KEY_GUIDE_REQUESTED, false)
+        if (isServiceConnected) {
+            TriggerNotification.show(this, isAutoClickEnabled)
+        }
     }
 
     private fun findNodeByTextContains(node: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
