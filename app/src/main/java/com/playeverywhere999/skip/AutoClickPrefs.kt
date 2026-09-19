@@ -1,6 +1,7 @@
 package com.playeverywhere999.skip
 
 import android.content.Context
+import android.content.SharedPreferences
 
 object AutoClickPrefs {
     private const val PREFS_NAME = "auto_click_prefs"
@@ -28,15 +29,29 @@ object AutoClickPrefs {
     }
 
     fun isEnabled(context: Context): Boolean {
-        return prefs(context)
-            .getBoolean(KEY_ENABLED, false)
+        return prefs(context).getBoolean(KEY_ENABLED, false) && isDisclosureAccepted(context)
     }
 
-    fun setEnabled(context: Context, value: Boolean) {
+    fun canResume(context: Context): Boolean =
+        isDisclosureAccepted(context) &&
+            AccessibilityUtils.isServiceEnabled(context) &&
+            targetText(context).isNotBlank()
+
+    fun setEnabled(context: Context, value: Boolean): Boolean {
+        val enabled = value && canResume(context)
         prefs(context)
             .edit()
-            .putBoolean(KEY_ENABLED, value)
+            .putBoolean(KEY_ENABLED, enabled)
             .apply()
+        return enabled
+    }
+
+    fun registerListener(context: Context, listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        prefs(context).registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    fun unregisterListener(context: Context, listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        prefs(context).unregisterOnSharedPreferenceChangeListener(listener)
     }
 
     fun isSoundEnabled(context: Context): Boolean {
@@ -72,6 +87,7 @@ object AutoClickPrefs {
         prefs(context)
             .edit()
             .putBoolean(KEY_DISCLOSURE_ACCEPTED, value)
+            .apply { if (!value) putBoolean(KEY_ENABLED, false) }
             .apply()
     }
 

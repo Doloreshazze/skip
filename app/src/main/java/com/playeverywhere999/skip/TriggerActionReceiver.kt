@@ -11,8 +11,9 @@ class TriggerActionReceiver : BroadcastReceiver() {
         }
 
         val enabled = intent.getBooleanExtra(EXTRA_ENABLED, false)
+        // A stale Resume action must never bypass setup or revoked consent.
         AutoClickPrefs.setEnabled(context, enabled)
-        TriggerNotification.show(context, enabled)
+        TriggerNotification.show(context)
     }
 
     companion object {

@@ -16,15 +16,22 @@ object TriggerNotification {
     private const val CHANNEL_ID = "trigger_control"
     private const val NOTIFICATION_ID = 1001
 
-    fun show(context: Context, enabled: Boolean) {
+    fun show(context: Context) {
+        if (!AccessibilityUtils.isServiceEnabled(context)) {
+            cancel(context)
+            return
+        }
         if (!canPostNotifications(context)) return
+
+        val enabled = AutoClickPrefs.isEnabled(context)
+        val needsSetup = !enabled && !AutoClickPrefs.canResume(context)
 
         createChannel(context)
 
         val openAppIntent = PendingIntent.getActivity(
             context,
             0,
-            Intent(context, MainActivity::class.java),
+            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val toggleIntent = PendingIntent.getBroadcast(
@@ -37,19 +44,23 @@ object TriggerNotification {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val title = if (enabled) {
-            context.getString(R.string.trigger_notification_active_title)
-        } else {
-            context.getString(R.string.trigger_notification_paused_title)
-        }
-        val actionLabel = if (enabled) {
-            context.getString(R.string.trigger_notification_pause)
-        } else {
-            context.getString(R.string.trigger_notification_resume)
-        }
+        val title = context.getString(when {
+            enabled -> R.string.trigger_notification_active_title
+            needsSetup -> R.string.trigger_tile_setup
+            else -> R.string.trigger_notification_paused_title
+        })
+        val actionLabel = context.getString(when {
+            enabled -> R.string.trigger_notification_pause
+            needsSetup -> R.string.trigger_open_app
+            else -> R.string.trigger_notification_resume
+        })
+        val actionIcon = if (enabled) R.drawable.ic_trigger_pause else R.drawable.ic_trigger_play
+        val action = NotificationCompat.Action.Builder(
+            actionIcon, actionLabel, if (needsSetup) openAppIntent else toggleIntent
+        ).setAuthenticationRequired(!enabled).build()
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_touch_hand)
+            .setSmallIcon(actionIcon)
             .setContentTitle(title)
             .setContentText(context.getString(R.string.trigger_notification_hint, actionLabel))
             .setContentIntent(openAppIntent)
@@ -58,7 +69,7 @@ object TriggerNotification {
             .setSilent(true)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .addAction(R.drawable.ic_touch_hand, actionLabel, toggleIntent)
+            .addAction(action)
             .build()
 
         try {

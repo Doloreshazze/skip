@@ -7,4 +7,13 @@
     <string name="trigger_notification_hint">Нажмите «%1$s», чтобы изменить состояние.</string>
     <string name="trigger_notification_pause">Пауза</string>
     <string name="trigger_notification_resume">Возобновить</string>
+    <string name="trigger_tile_label">Skip</string>
+    <string name="trigger_tile_active">Skip: работает</string>
+    <string name="trigger_tile_paused">Skip: пауза</string>
+    <string name="trigger_tile_setup">Skip: настройка</string>
+    <string name="trigger_setup_required">Откройте Skip, подтвердите согласие, укажите текст кнопки и включите службу в специальных возможностях.</string>
+    <string name="trigger_open_app">Открыть Skip</string>
+    <string name="trigger_quick_controls_title">Быстрая пауза</string>
+    <string name="trigger_quick_controls_hint">Нажимайте «Пауза» / «Возобновить» в уведомлении. Можно также открыть изменение кнопок шторки и перетащить туда плитку Skip. Пауза сохраняет настройки и разрешение специальных возможностей.</string>
+    <string name="trigger_notification_settings">Показать управление в уведомлении</string>
 </resources>
