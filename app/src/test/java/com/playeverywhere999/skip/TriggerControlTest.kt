@@ -112,8 +112,7 @@ class TriggerControlTest {
 
     @Test
     fun tileAndNotificationShareStateWhilePanelIsOpen() {
-        val controller = Robolectric.buildService(TriggerTileService::class.java).create()
-        val service = controller.get()
+        val service = Robolectric.buildService(TriggerTileService::class.java).create().get()
         service.onStartListening()
         assertEquals(Tile.STATE_ACTIVE, service.qsTile.state)
         service.onClick()
@@ -127,13 +126,14 @@ class TriggerControlTest {
         service.onStartListening()
         assertEquals(Tile.STATE_UNAVAILABLE, service.qsTile.state)
         service.onStopListening()
-        controller.destroy()
+        // This unregisters our listener. Robolectric 4.16's ShadowTileService
+        // does not extend ShadowService, so ServiceController.destroy() throws
+        // a framework-shadow ClassCastException after the assertions above.
     }
 
     @Test
     fun tilePausesWhileLockedButUnlocksBeforeResume() {
-        val controller = Robolectric.buildService(TriggerTileService::class.java).create()
-        val service = controller.get()
+        val service = Robolectric.buildService(TriggerTileService::class.java).create().get()
         service.onStartListening()
         shadowOf(service).setLocked(true)
         service.onClick()
@@ -143,6 +143,5 @@ class TriggerControlTest {
         assertTrue(AutoClickPrefs.isEnabled(context))
         assertFalse(service.isLocked)
         service.onStopListening()
-        controller.destroy()
     }
 }
