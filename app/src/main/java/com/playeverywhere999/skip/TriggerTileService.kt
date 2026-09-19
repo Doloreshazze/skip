@@ -51,7 +51,7 @@ class TriggerTileService : TileService() {
 
     private fun refreshTile() {
         val tile = qsTile ?: return
-        val enabled = AutoClickPrefs.isEnabled(this)
+        val enabled = AccessibilityUtils.isServiceEnabled(this) && AutoClickPrefs.isEnabled(this)
         val ready = AutoClickPrefs.canResume(this)
         val label = getString(when {
             enabled -> R.string.trigger_tile_active
@@ -67,7 +67,11 @@ class TriggerTileService : TileService() {
         tile.contentDescription = label
         tile.icon = Icon.createWithResource(this, if (enabled) R.drawable.ic_trigger_pause else R.drawable.ic_trigger_play)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            tile.subtitle = getString(if (enabled) R.string.trigger_notification_pause else R.string.trigger_notification_resume)
+            tile.subtitle = getString(when {
+                enabled -> R.string.trigger_notification_pause
+                ready -> R.string.trigger_notification_resume
+                else -> R.string.trigger_open_app
+            })
         }
         tile.updateTile()
     }

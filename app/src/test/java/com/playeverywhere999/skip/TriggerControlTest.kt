@@ -7,11 +7,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Looper
 import android.provider.Settings
+import android.service.quicksettings.Tile
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Robolectric
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
@@ -106,5 +108,41 @@ class TriggerControlTest {
         TriggerActionReceiver().onReceive(context, action(false))
         assertEquals(context.getString(R.string.trigger_notification_resume),
             notifications.activeNotifications.single().notification.actions.single().title.toString())
+    }
+
+    @Test
+    fun tileAndNotificationShareStateWhilePanelIsOpen() {
+        val controller = Robolectric.buildService(TriggerTileService::class.java).create()
+        val service = controller.get()
+        service.onStartListening()
+        assertEquals(Tile.STATE_ACTIVE, service.qsTile.state)
+        service.onClick()
+        assertFalse(AutoClickPrefs.isEnabled(context))
+        assertEquals(Tile.STATE_INACTIVE, service.qsTile.state)
+        TriggerActionReceiver().onReceive(context, action(true))
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(Tile.STATE_ACTIVE, service.qsTile.state)
+        service.onStopListening()
+        Settings.Secure.putString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "")
+        service.onStartListening()
+        assertEquals(Tile.STATE_UNAVAILABLE, service.qsTile.state)
+        service.onStopListening()
+        controller.destroy()
+    }
+
+    @Test
+    fun tilePausesWhileLockedButUnlocksBeforeResume() {
+        val controller = Robolectric.buildService(TriggerTileService::class.java).create()
+        val service = controller.get()
+        service.onStartListening()
+        shadowOf(service).setLocked(true)
+        service.onClick()
+        assertFalse(AutoClickPrefs.isEnabled(context))
+        assertTrue(service.isLocked)
+        service.onClick()
+        assertTrue(AutoClickPrefs.isEnabled(context))
+        assertFalse(service.isLocked)
+        service.onStopListening()
+        controller.destroy()
     }
 }

@@ -42,6 +42,10 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+    lint {
+        // Known incomplete translations in master; new issues still fail CI.
+        baseline = file("lint-baseline.xml")
+    }
 }
 
 dependencies {

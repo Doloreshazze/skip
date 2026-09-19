@@ -34,8 +34,11 @@ application ID and needs the owner's release signing configuration.
 
 Robolectric regression tests cover persistent pause, preserving Accessibility
 and target text, repeated actions, consent withdrawal, disabled Accessibility,
-empty targets, malformed broadcasts, and notification action labels on APIs 28
-and 31. Device checks: add the tile, pause/resume while another app is open,
+empty targets, malformed broadcasts, notification labels, live tile updates,
+service disablement, and lock-screen pause/resume on APIs 28 and 31.
+`app/lint-baseline.xml` records only the 41 existing incomplete-translation
+findings in master's `values/strings.xml`; other lint errors still fail CI.
+Device checks: add the tile, pause/resume while another app is open,
 repeat using the notification, deny notifications and try the tile, then restart
 the process while paused. These device checks must be done on a real device or
 emulator; unit tests do not establish OEM-specific behaviour.
