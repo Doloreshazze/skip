@@ -1,21 +1,27 @@
 package com.playeverywhere999.skip
 
+import android.Manifest
 import android.app.Activity
 import android.app.KeyguardManager
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.Build
 import android.os.PowerManager
+import android.content.pm.PackageManager
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.ViewCompat
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -175,13 +181,42 @@ private fun AutoClickScreen() {
     var powerPermissionDontAskAgain by rememberSaveable { mutableStateOf(false) }
     var previousAccessibilityEnabled by rememberSaveable { mutableStateOf(accessibilityEnabled) }
     val permissionCardOffset = remember { Animatable(0f) }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted && AccessibilityUtils.isServiceEnabled(context)) {
+            TriggerNotification.show(context)
+        }
+    }
+
+    LaunchedEffect(accessibilityEnabled, disclosureAccepted) {
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            accessibilityEnabled &&
+            disclosureAccepted &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     DisposableEffect(lifecycleOwner, context) {
+        val prefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            enabled = AutoClickPrefs.isEnabled(context)
+            disclosureAccepted = AutoClickPrefs.isDisclosureAccepted(context)
+        }
+        AutoClickPrefs.registerListener(context, prefsListener)
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 val currentAccessibilityState = AccessibilityUtils.isServiceEnabled(context)
                 val justEnabledAccessibility = !previousAccessibilityEnabled && currentAccessibilityState
                 accessibilityEnabled = currentAccessibilityState
+                enabled = AutoClickPrefs.isEnabled(context)
+                disclosureAccepted = AutoClickPrefs.isDisclosureAccepted(context)
+                TriggerNotification.show(context)
                 val guideRequestedNow = AutoClickPrefs.isAccessibilityGuideRequested(context)
                 guideRequested = guideRequestedNow
                 screenLocked = isScreenLocked(context)
@@ -199,7 +234,10 @@ private fun AutoClickScreen() {
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            AutoClickPrefs.unregisterListener(context, prefsListener)
+        }
     }
 
     LaunchedEffect(permissionAttentionTrigger) {
@@ -340,7 +378,7 @@ private fun AutoClickScreen() {
                     ) {
                         SettingToggleRow(
                             title = stringResource(R.string.toggle_easy_title),
-                            subtitle = if (enabled) stringResource(R.string.state_active) else stringResource(R.string.state_disabled),
+                            subtitle = if (enabled) stringResource(R.string.state_active) else stringResource(R.string.trigger_notification_pause),
                             checked = enabled,
                             enabled = disclosureAccepted,
                             onCheckedChange = {
@@ -349,8 +387,7 @@ private fun AutoClickScreen() {
                                     return@SettingToggleRow
                                 }
                                 val canEnable = !it || accessibilityEnabled
-                                enabled = canEnable && it
-                                AutoClickPrefs.setEnabled(context, enabled)
+                                enabled = AutoClickPrefs.setEnabled(context, canEnable && it)
                                 if (enabled) {
                                     Toast.makeText(
                                         context,
@@ -375,6 +412,28 @@ private fun AutoClickScreen() {
                                 AutoClickPrefs.setSoundEnabled(context, it)
                             }
                         )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                        Text(
+                            text = stringResource(R.string.trigger_quick_controls_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = stringResource(R.string.trigger_quick_controls_hint),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Button(onClick = {
+                            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                            } else {
+                                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                    Uri.parse("package:${context.packageName}"))
+                            }
+                            context.startActivity(intent)
+                        }) {
+                            Text(stringResource(R.string.trigger_notification_settings))
+                        }
                     }
                 }
 

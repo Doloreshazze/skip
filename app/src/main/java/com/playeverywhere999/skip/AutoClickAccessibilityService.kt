@@ -20,6 +20,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.accessibility.AccessibilityWindowInfo
 import android.widget.ImageView
 
 class AutoClickAccessibilityService : AccessibilityService() {
@@ -32,6 +33,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
     private var isSoundEnabled = true
     private var targetText = ""
     private var accessibilityGuideRequested = false
+    private var isServiceConnected = false
     private var guideLastScrollAt = 0L
     @Volatile private var isServiceDestroyed = false
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -49,20 +51,24 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        isServiceConnected = true
         serviceInfo = serviceInfo.apply {
             flags = flags or
                 AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
                 AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
         }
         toneGenerator = ToneGenerator(AudioManager.STREAM_NOTIFICATION, TONE_VOLUME)
+        TriggerNotification.show(this)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         handleSettingsGuide()
 
-        if (!isAutoClickEnabled) {
+        if (!AutoClickPrefs.isEnabled(this) || isScreenLocked()) {
             return
         }
+
+        if (event?.packageName == packageName || event?.packageName == SYSTEM_UI_PACKAGE) return
 
         if (targetText.isEmpty()) {
             return
@@ -87,6 +93,8 @@ class AutoClickAccessibilityService : AccessibilityService() {
         for (index in visibleWindows.indices) {
             val window = visibleWindows[index]
             try {
+                // Never click our own notification or the system's quick controls.
+                if (window.type != AccessibilityWindowInfo.TYPE_APPLICATION) continue
                 val root = window.root
                 if (root != null) {
                     inspectedWindowRoot = true
@@ -124,6 +132,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         isServiceDestroyed = true
+        isServiceConnected = false
         super.onDestroy()
         if (::prefs.isInitialized) {
             prefs.unregisterOnSharedPreferenceChangeListener(prefsChangeListener)
@@ -131,6 +140,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         detachOverlay()
         toneGenerator?.release()
         toneGenerator = null
+        TriggerNotification.cancel(this)
     }
 
     private fun handleSettingsGuide() {
@@ -214,7 +224,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
             if (current.isClickable) {
                 val bounds = Rect()
                 current.getBoundsInScreen(bounds)
-                val didClick = current.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                val didClick = AutoClickPrefs.isEnabled(this) &&
+                    !isScreenLocked() &&
+                    current.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                 if (current !== node) {
                     current.recycle()
                 }
@@ -256,7 +268,9 @@ class AutoClickAccessibilityService : AccessibilityService() {
 
     private fun isIgnoredTargetInputNode(node: AccessibilityNodeInfo): Boolean {
         val className = node.className?.toString().orEmpty()
-        return node.isEditable ||
+        val nodePackage = node.packageName?.toString()
+        return nodePackage == packageName || nodePackage == SYSTEM_UI_PACKAGE ||
+            node.isEditable ||
             className == "android.widget.EditText" ||
             isLauncherNode(node)
     }
@@ -371,13 +385,16 @@ class AutoClickAccessibilityService : AccessibilityService() {
     }
 
     private fun reloadPrefs() {
-        isAutoClickEnabled = prefs.getBoolean(KEY_ENABLED, false)
+        isAutoClickEnabled = AutoClickPrefs.isEnabled(this)
         if (!isAutoClickEnabled) {
             detachOverlay()
         }
         isSoundEnabled = prefs.getBoolean("sound_enabled", true)
         targetText = prefs.getString("target_text", "").orEmpty().trim()
         accessibilityGuideRequested = prefs.getBoolean(KEY_GUIDE_REQUESTED, false)
+        if (isServiceConnected) {
+            TriggerNotification.show(this)
+        }
     }
 
     private fun findNodeByTextContains(node: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
@@ -411,7 +428,7 @@ class AutoClickAccessibilityService : AccessibilityService() {
         private const val TONE_VOLUME = 80
         private const val GUIDE_SCROLL_COOLDOWN_MS = 700L
         private const val KEY_GUIDE_REQUESTED = "accessibility_guide_requested"
-        private const val KEY_ENABLED = "enabled"
+        private const val SYSTEM_UI_PACKAGE = "com.android.systemui"
         private const val INDICATOR_SIZE_DP = 64f
         private const val INDICATOR_PADDING_DP = 12f
         private const val MAX_TRIGGER_TEXT_WORDS = 2

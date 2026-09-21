@@ -13,13 +13,17 @@ android {
         applicationId = "com.playeverywhere999.skip"
         minSdk = 24
         targetSdk = 36
-        versionCode = 10
-        versionName = "10"
+        versionCode = 12
+        versionName = "12"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".quickpause"
+            versionNameSuffix = "-quickpause"
+        }
         release {
             isMinifyEnabled = true
             proguardFiles(
@@ -35,6 +39,13 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
+    lint {
+        // Known incomplete translations in master; new issues still fail CI.
+        baseline = file("lint-baseline.xml")
+    }
 }
 
 dependencies {
@@ -47,6 +58,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     testImplementation(libs.junit)
+    testImplementation("org.robolectric:robolectric:4.16")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

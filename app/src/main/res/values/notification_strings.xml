@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string name="trigger_notification_channel_name">Trigger control</string>
+    <string name="trigger_notification_channel_description">Pause or resume the Skip trigger without opening the app.</string>
+    <string name="trigger_notification_active_title">Skip trigger is active</string>
+    <string name="trigger_notification_paused_title">Skip trigger is paused</string>
+    <string name="trigger_notification_hint">Tap “%1$s” to change its state.</string>
+    <string name="trigger_notification_pause">Pause</string>
+    <string name="trigger_notification_resume">Resume</string>
+    <string name="trigger_tile_label">Skip</string>
+    <string name="trigger_tile_active">Skip: active</string>
+    <string name="trigger_tile_paused">Skip: paused</string>
+    <string name="trigger_tile_setup">Skip: setup</string>
+    <string name="trigger_setup_required">Open Skip, accept the disclosure, enter the button text and enable its Accessibility service.</string>
+    <string name="trigger_open_app">Open Skip</string>
+    <string name="trigger_quick_controls_title">Quick pause</string>
+    <string name="trigger_quick_controls_hint">Use Pause / Resume in the notification. You can also edit Quick Settings and drag the Skip tile into the panel. Pausing keeps your settings and the Accessibility permission.</string>
+    <string name="trigger_notification_settings">Show notification controls</string>
+</resources>
