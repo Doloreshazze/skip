@@ -20,7 +20,6 @@ import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import android.view.accessibility.AccessibilityWindowInfo
 import android.widget.ImageView
 
 class AutoClickAccessibilityService : AccessibilityService() {
@@ -67,8 +66,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
         if (!AutoClickPrefs.isEnabled(this) || isScreenLocked()) {
             return
         }
-
-        if (event?.packageName == packageName || event?.packageName == SYSTEM_UI_PACKAGE) return
 
         if (targetText.isEmpty()) {
             return
