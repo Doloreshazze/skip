@@ -20,7 +20,6 @@ import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import android.view.accessibility.AccessibilityWindowInfo
 import android.widget.ImageView
 
 class AutoClickAccessibilityService : AccessibilityService() {
@@ -68,8 +67,6 @@ class AutoClickAccessibilityService : AccessibilityService() {
             return
         }
 
-        if (event?.packageName == packageName || event?.packageName == SYSTEM_UI_PACKAGE) return
-
         if (targetText.isEmpty()) {
             return
         }
@@ -93,13 +90,19 @@ class AutoClickAccessibilityService : AccessibilityService() {
         for (index in visibleWindows.indices) {
             val window = visibleWindows[index]
             try {
-                // Never click our own notification or the system's quick controls.
-                if (window.type != AccessibilityWindowInfo.TYPE_APPLICATION) continue
+                // PiP windows (including YouTube) are not guaranteed to be
+                // reported as TYPE_APPLICATION. Do not filter by window type:
+                // instead, inspect the root package and exclude only our own UI
+                // and System UI. This keeps PiP accessible while preventing the
+                // trigger from acting on notifications/Quick Settings.
                 val root = window.root
                 if (root != null) {
-                    inspectedWindowRoot = true
                     try {
-                        clickedBounds = clickFirstMatchingNode(root, targetText)
+                        val rootPackage = root.packageName?.toString()
+                        if (rootPackage != packageName && rootPackage != SYSTEM_UI_PACKAGE) {
+                            inspectedWindowRoot = true
+                            clickedBounds = clickFirstMatchingNode(root, targetText)
+                        }
                     } finally {
                         root.recycle()
                     }
